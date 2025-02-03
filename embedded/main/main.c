@@ -11,9 +11,6 @@
 #include "handle_wifi.h"
 #include "esp_netif.h"
 
-//BIT0 WIFI SET
-//BIT1 GOT IP
-
 
 void app_main() {
 
@@ -31,7 +28,7 @@ void app_main() {
     params.event_handle = xEventGroupCreate();
 
     handle_wifi(&params);
-    // xTaskCreate(handle_sensor_task, "sensor_task", 4096, NULL, 5, NULL);
+    xTaskCreate(handle_sensor_task, "sensor_task", 4096, NULL, 5, NULL);
 
     ESP_LOGI("main", "Waiting for wifi to connect");
     xEventGroupWaitBits(params.event_handle, BIT0, pdTRUE, pdTRUE, portMAX_DELAY);
