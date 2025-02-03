@@ -44,7 +44,7 @@ void app_main() {
 
     //task that will handle the sensor
     ESP_LOGI("main", "GOING INTO SENSOR TASK");
-    xTaskCreate(handle_sensor_task, "sensor_task", 4096, NULL, 5, NULL);
+    xTaskCreate(handle_sensor_task, "sensor_task", 4096, &global_task_params, 5, NULL);
 
     ESP_LOGI("main", "GOING INTO UDP TASK");
     xTaskCreate(run_udp_task, "udp_task", 4096, &global_task_params, 5, NULL);

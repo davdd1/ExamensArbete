@@ -13,4 +13,4 @@
 void write_register(uint8_t reg, uint8_t value);
 void read_mpu6050_data(uint8_t start_reg, int16_t *data);
 void i2c_master_init();
-void handle_sensor_task();
+void handle_sensor_task(void* params);
