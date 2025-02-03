@@ -37,6 +37,8 @@ void app_main() {
 
     global_task_params.event_handle = xEventGroupCreate();
 
+    // 1 Sensordata struct i taget, tänker att vi väntar på att den töms innan vi skickar nästa in i kön
+    global_task_params.sensor_data_queue = xQueueCreate(1, sizeof(sensor_payload_t));
     // Run wifi FIRST to ensure that the sensor task can connect to the internet
     handle_wifi(&global_task_params);
 

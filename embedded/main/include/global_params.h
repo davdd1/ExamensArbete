@@ -8,6 +8,7 @@
 
 typedef struct task_params {
     EventGroupHandle_t event_handle;
+    QueueHandle_t sensor_data_queue;
 } task_params_t;
 
 // Declare an external instance of task_params_t
