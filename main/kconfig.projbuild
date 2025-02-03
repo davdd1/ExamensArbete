@@ -1,0 +1,15 @@
+menu "TLS project Configuration"
+
+    config WIFI_SSID
+            string "WIFI SSID"
+            default "myssid"
+            help
+                SSID (network name) for us to connect to.
+
+    config WIFI_PASSWORD
+            string "WiFi Password"
+            default "mypassword"
+            help
+                WiFi password (WPA or WPA2) to connect to.
+
+endmenu
