@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	port = "1234"
+	port = ":1234"
 )
 
 func main() {	

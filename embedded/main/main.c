@@ -2,15 +2,26 @@
 #include "driver/i2c.h"
 #include "esp_log.h"
 #include <esp_task.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/event_groups.h"
 #include "esp_event.h"
 #include "esp_system.h"
 #include "nvs_flash.h"
+#include "esp_netif.h"
 #include "handle_sensor.h"
 #include "handle_wifi.h"
-#include "esp_netif.h"
-
+#include "handle_udp.h"
+#include "global_params.h"
+/*
+ESP WORK FLOW:
+1. Starta wifi -> connecta till UDP Server -> VÄnta på svar ( Få ID ); Efter vi fått ID betyder det att vi nu är anslutna till servern eller är med i spelet
+2. Starta sensor -> skicka data till UDP Server i format
+struct SensorPacket {
+    uint8_t type;  // 1 = Sensor data / 0 för en ny connection
+    uint32_t player_id;
+    float gyro_x;
+    float gyro_y;
+    float gyro_z;
+};
+*/
 
 void app_main() {
 
@@ -24,18 +35,17 @@ void app_main() {
     esp_netif_init();
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
-    task_params_t params;
-    params.event_handle = xEventGroupCreate();
+    global_task_params.event_handle = xEventGroupCreate();
 
-    handle_wifi(&params);
+    // Run wifi FIRST to ensure that the sensor task can connect to the internet
+    handle_wifi(&global_task_params);
+
+    //task that will handle the sensor
+    ESP_LOGI("main", "GOING INTO SENSOR TASK");
     xTaskCreate(handle_sensor_task, "sensor_task", 4096, NULL, 5, NULL);
 
-    ESP_LOGI("main", "Waiting for wifi to connect");
-    xEventGroupWaitBits(params.event_handle, BIT0, pdTRUE, pdTRUE, portMAX_DELAY);
-    ESP_LOGI("main", "Connected to wifi, finished waiting");
+    ESP_LOGI("main", "GOING INTO UDP TASK");
+    xTaskCreate(run_udp_task, "udp_task", 4096, &global_task_params, 5, NULL);
 
 
-    while(1){
-        vTaskDelay(pdMS_TO_TICKS(1000));
-    }
 }

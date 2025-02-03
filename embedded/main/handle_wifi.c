@@ -23,7 +23,7 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t e
         break;
 
     case WIFI_EVENT_STA_CONNECTED:
-        xEventGroupSetBits(param->event_handle, BIT0);
+        xEventGroupSetBits(param->event_handle, GOT_WIFI_BIT);
         ESP_LOGI(TAG, "Connected to wifi, set bit0");
         break;
 
@@ -47,7 +47,7 @@ static void ip_event_handler(void *arg, esp_event_base_t event_base, int32_t eve
     switch (event_id)
     {
     case IP_EVENT_STA_GOT_IP:
-        xEventGroupSetBits(param->event_handle, BIT1);
+        xEventGroupSetBits(param->event_handle, GOT_IP_BIT);
         ESP_LOGI(TAG, "GOT IP, set bit1");
         break;
 
