@@ -35,6 +35,7 @@ void write_register(uint8_t reg, uint8_t value) {
     i2c_master_write_byte(cmd, reg, true);
     i2c_master_write_byte(cmd, value, true);
     i2c_master_stop(cmd);
+
     i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 1000 / portTICK_PERIOD_MS);
     i2c_cmd_link_delete(cmd);
 }
@@ -43,13 +44,16 @@ void write_register(uint8_t reg, uint8_t value) {
 void read_mpu6050_data(uint8_t start_reg, int16_t *data) {
     uint8_t raw_data[6];
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, (MPU6050_ADDR << 1) | I2C_MASTER_WRITE, true);
     i2c_master_write_byte(cmd, start_reg, true);
+
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, (MPU6050_ADDR << 1) | I2C_MASTER_READ, true);
     i2c_master_read(cmd, raw_data, 6, I2C_MASTER_LAST_NACK);
     i2c_master_stop(cmd);
+
     i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 1000 / portTICK_PERIOD_MS);
     i2c_cmd_link_delete(cmd);
 
