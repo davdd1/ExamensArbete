@@ -58,30 +58,19 @@ void run_udp_task(void* params) {
     ESP_LOGI("UDP", "Socket created, sending to %s:%s", host_ip, UDP_PORT);
 
     while (1) {
-        char payload[] = "Hello, Server!";  // Exempel på data att skicka
+        sensor_payload_t global_sensor_packet;
+        xQueueReceive(task_params->sensor_data_queue, &global_sensor_packet, portMAX_DELAY);
+        
 
-        int err = sendto(sock, payload, strlen(payload), 0, (struct sockaddr*)&dest_addr, sizeof(dest_addr));
+        int err = sendto(sock, &global_sensor_packet, sizeof(global_sensor_packet), 0, (struct sockaddr*)&dest_addr, sizeof(dest_addr));
         if (err < 0) {
             ESP_LOGE("UDP", "Error occurred during sending: errno %d", errno);
             break;
         }
 
-        ESP_LOGI("UDP", "Message sent, waiting for response...");
+        ESP_LOGI("UDP", "Message sent");
 
-        // Vänta på svar från servern
-        struct sockaddr_in source_addr;
-        socklen_t socklen = sizeof(source_addr);
-        int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer) - 1, 0, (struct sockaddr*)&source_addr, &socklen);
-
-        if (len < 0) {
-            ESP_LOGE("UDP", "Error receiving: errno %d", errno);
-            break;
-        } else {
-            rx_buffer[len] = '\0';
-            ESP_LOGI("UDP", "Received %d bytes: %s", len, rx_buffer);
-        }
-
-        vTaskDelay(pdMS_TO_TICKS(1000)); // Vänta 1 sekund innan nästa skickning
+        vTaskDelay(pdMS_TO_TICKS(100)); // Vänta 1 sekund innan nästa skickning
     }
 
     if (sock != -1) {

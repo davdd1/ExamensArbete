@@ -1,6 +1,7 @@
 #include "handle_sensor.h"
 #include "driver/i2c.h"
 #include "esp_log.h"
+#include "global_params.h"
 
 void i2c_master_init() {
     i2c_config_t conf = {
@@ -53,7 +54,7 @@ void read_mpu6050_data(uint8_t start_reg, int16_t *data) {
     }
 }
 
-void handle_sensor_task() {
+void handle_sensor_task(void* params) {
     i2c_master_init();
     vTaskDelay(pdMS_TO_TICKS(1000));
 
@@ -63,12 +64,17 @@ void handle_sensor_task() {
 
     int16_t accel[3], gyro[3];
 
+    task_params_t *task_params = (task_params_t*) params;
+
+
+
     while (1) {
         // Läs accelerometerdata
-        read_mpu6050_data(ACCEL_XOUT_H, accel);
-        float ax = accel[0] / 16384.0;  // Skala till g-krafter
-        float ay = accel[1] / 16384.0;
-        float az = accel[2] / 16384.0;
+        
+        // read_mpu6050_data(ACCEL_XOUT_H, accel);
+        // float ax = accel[0] / 16384.0;  // Skala till g-krafter
+        // float ay = accel[1] / 16384.0;
+        // float az = accel[2] / 16384.0;
 
         // Läs gyroskopdata
         read_mpu6050_data(0x43, gyro);
@@ -76,9 +82,16 @@ void handle_sensor_task() {
         float gy = gyro[1] / 131.0;
         float gz = gyro[2] / 131.0;
 
-        printf("📊 Accelerometer: X=%.2fg, Y=%.2fg, Z=%.2fg\n", ax, ay, az);
-        printf("🎛️ Gyroskop: X=%.2f°/s, Y=%.2f°/s, Z=%.2f°/s\n", gx, gy, gz);
-        printf("\n");
-        vTaskDelay(pdMS_TO_TICKS(1000));  // Vänta 500 ms
+        // Skicka data till UDP-tasken
+        sensor_payload_t sensor_data = {
+            .type = 1,
+            .player_id = 1, // TEMPORARY
+            .gyro_x = gx,
+            .gyro_y = gy,
+            .gyro_z = gz
+        };
+
+        //vänta tills kön är tom innan vi skickar nästa data
+        xQueueSend(task_params->sensor_data_queue, &sensor_data, portMAX_DELAY);
     }
 }
