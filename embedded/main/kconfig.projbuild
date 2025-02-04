@@ -11,5 +11,15 @@ menu "TLS project Configuration"
             default "mypassword"
             help
                 WiFi password (WPA or WPA2) to connect to.
+    config SERVER_IP
+            string "Server IP"
+            default "localhost"
+            help 
+                Server IP address to connect to.
 
+    config SERVER_PORT
+            string "Server Port"
+            default "1234"
+            help 
+                Server port to connect to.
 endmenu
