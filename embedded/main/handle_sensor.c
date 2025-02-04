@@ -93,7 +93,5 @@ void handle_sensor_task(void* params) {
 
         //vänta tills kön är tom innan vi skickar nästa data
         xQueueSend(task_params->sensor_data_queue, &sensor_data, portMAX_DELAY);
-
-        vTaskDelay(pdMS_TO_TICKS(1000));  // Vänta 500 ms
     }
 }
