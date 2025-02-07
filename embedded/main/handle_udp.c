@@ -22,8 +22,8 @@
 #include "lwip/err.h"        
 
 
-#define UDP_PORT CONFIG_SERVER_IP
-#define UDP_SERVER_IP CONFIG_SERVER_PORT
+#define UDP_PORT CONFIG_SERVER_PORT
+#define UDP_SERVER_IP CONFIG_SERVER_IP
 
 void run_udp_task(void* params) {
     ESP_LOGI("UDP", "Starting UDP task...");
