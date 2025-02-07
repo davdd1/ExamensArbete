@@ -1,4 +1,4 @@
-# Examens arbete - Jesper Morais & David Stenman👍
+# Examensarbete - Jesper Morais & David Stenman👍
 
 ## IoT Controller - **Beskrivning**
 
