@@ -10,6 +10,7 @@
 #include "handle_wifi.h"
 #include "handle_udp.h"
 #include "global_params.h"
+#include "led_strip.h" // WOOOOW
 /*
 ESP WORK FLOW:
 1. Starta wifi -> connecta till UDP Server -> VÄnta på svar ( Få ID ); Efter vi fått ID betyder det att vi nu är anslutna till servern eller är med i spelet
