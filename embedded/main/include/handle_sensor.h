@@ -1,8 +1,8 @@
 #pragma once
 #include <stdio.h>
 
-#define I2C_MASTER_SDA_IO 6  // GPIO6 (LP_I2C_SDA)
-#define I2C_MASTER_SCL_IO 7  // GPIO7 (LP_I2C_SCL)
+#define I2C_MASTER_SDA_IO 5  // GPIO6 (LP_I2C_SDA)
+#define I2C_MASTER_SCL_IO 6  // GPIO7 (LP_I2C_SCL)
 #define I2C_MASTER_FREQ_HZ 100000  // 100 kHz standard I2C
 #define I2C_MASTER_NUM I2C_NUM_0  // Använd I2C-buss 0
 

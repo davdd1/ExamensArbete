@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/binary"
 	"encoding/json"
+	"fmt"
 	"log"
 	"math"
 	"net"
@@ -18,6 +19,9 @@ import (
 // expectedSize definierar den förväntade storleken på inkommande UDP-paket (20 byte)
 // Struktur: 1 byte (type) + 3 byte (padding) + 4 byte (player_id) + 4 byte (gyro_x) + 4 byte (gyro_y) + 4 byte (gyro_z)
 const expectedSize = 20
+
+// connectedDevices stores the MAC addresses of connected devices.
+var connectedDevices []string
 
 // SensorData representerar de sensorvärden vi tar emot (här fokuserar vi på gyro_x och gyro_y).
 type SensorData struct {
@@ -133,43 +137,54 @@ func udpReceiver() {
 	// Buffer för inkommande data.
 	buf := make([]byte, 1024)
 	for {
-		n, _, err := conn.ReadFromUDP(buf)
+		// Läs in data från UDP‑porten.
+		n, adr, err := conn.ReadFromUDP(buf)
 		if err != nil {
 			log.Println("UDP läsfel:", err)
 			continue
 		}
 		// Kontrollera att paketet har rätt storlek.
-		if n < expectedSize {
+		if n < expectedSize && buf[0] != 0 {
 			log.Printf("För kort paket: %d byte (förväntat %d)", n, expectedSize)
 			continue
 		}
 
-		// Avkoda paketet enligt följande struktur:
-		// Byte 0: type (ignoreras)
-		// Byte 1-3: padding (ignoreras)
-		// Byte 4-7: player_id (ignoreras här)
-		// Byte 8-11: gyro_x (float32)
-		// Byte 12-15: gyro_y (float32)
-		// Byte 16-19: gyro_z (ignoreras)
-		gyroX := math.Float32frombits(binary.LittleEndian.Uint32(buf[8:12]))
-		gyroY := math.Float32frombits(binary.LittleEndian.Uint32(buf[12:16]))
+		// ifall byte = 0 är det en connecton req, vi vill då spara dennes mac i en lista och skicka tillbaka en connection ack
+		if buf[0] == 0 {
 
-		// Justera värdena med en skalfaktor och implementera en "dead zone"
-		const factor = 0.5
-		deltaX := float64(gyroX) * factor
-		deltaY := float64(gyroY) * factor
-		if math.Abs(deltaX) < 0.05 {
-			deltaX = 0
+			print("Connection request received\n")
+			handle_ACK_request(conn, adr, buf)
+
+		} else {
+			// Om det inte är en connection request så är det sensor data
+
+			// Avkoda paketet enligt följande struktur:
+			// Byte 0: type (ignoreras)
+			// Byte 1-3: padding (ignoreras)
+			// Byte 4-7: player_id (ignoreras här)
+			// Byte 8-11: gyro_x (float32)
+			// Byte 12-15: gyro_y (float32)
+			// Byte 16-19: gyro_z (ignoreras)
+			gyroX := math.Float32frombits(binary.LittleEndian.Uint32(buf[8:12]))
+			gyroY := math.Float32frombits(binary.LittleEndian.Uint32(buf[12:16]))
+
+			// Justera värdena med en skalfaktor och implementera en "dead zone"
+			const factor = 0.5
+			deltaX := float64(gyroX) * factor
+			deltaY := float64(gyroY) * factor
+			if math.Abs(deltaX) < 0.05 {
+				deltaX = 0
+			}
+			if math.Abs(deltaY) < 0.05 {
+				deltaY = 0
+			}
+
+			// Här skickar vi de mottagna värdena vidare via websocket.
+			broadcastSensorData(gyroX, gyroY)
+
+			// En kort paus för att undvika hög CPU-belastning.
+			time.Sleep(10 * time.Millisecond)
 		}
-		if math.Abs(deltaY) < 0.05 {
-			deltaY = 0
-		}
-
-		// Här skickar vi de mottagna värdena vidare via websocket.
-		broadcastSensorData(gyroX, gyroY)
-
-		// En kort paus för att undvika hög CPU-belastning.
-		time.Sleep(10 * time.Millisecond)
 	}
 }
 
@@ -186,4 +201,42 @@ func main() {
 
 	// Blockera main-funktionen (vänta på evig körning).
 	select {}
+}
+
+func handle_ACK_request(conn *net.UDPConn, addr *net.UDPAddr, buf []byte) {
+	// printa ut mac adressen som kommer efter som Uint8_t [6] array
+	// Hämta MAC-adress från buf[1:7]
+	macAddr := buf[1:7]
+
+	// Skriv ut MAC-adressen i hexadecimal form
+	fmt.Printf("Mac address: %02X:%02X:%02X:%02X:%02X:%02X\n",
+		macAddr[0], macAddr[1], macAddr[2], macAddr[3], macAddr[4], macAddr[5])
+	// Convert MAC address to string format for comparison and storage.
+	macAddrStr := fmt.Sprintf("%02X:%02X:%02X:%02X:%02X:%02X",
+		macAddr[0], macAddr[1], macAddr[2], macAddr[3], macAddr[4], macAddr[5])
+
+	// Check if the MAC address is already in the list.
+	deviceExists := false
+	for _, device := range connectedDevices {
+		if device == macAddrStr {
+			deviceExists = true
+			break
+		}
+	}
+
+	// If not, add it to the list and send a connection acknowledgment.
+	if !deviceExists {
+		connectedDevices = append(connectedDevices, macAddrStr)
+		fmt.Println("Device added to connected devices list:", macAddrStr)
+
+		// Send connection acknowledgment (example response).
+		ack := []byte{1}                     // Example ACK byte.
+		_, err := conn.WriteToUDP(ack, addr) // Replace 'nil' with the sender's address if available.
+		log.Println("Connection acknowledgment sent")
+		if err != nil {
+			log.Println("Failed to send connection acknowledgment:", err)
+		}
+	} else {
+		fmt.Println("Device already connected:", macAddrStr)
+	}
 }

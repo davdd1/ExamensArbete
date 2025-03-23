@@ -91,7 +91,9 @@ void handle_sensor_task(void* params) {
             .gyro_z = gz
         };
 
+        
         //vänta tills kön är tom innan vi skickar nästa data
-        xQueueSend(task_params->sensor_data_queue, &sensor_data, portMAX_DELAY);
+        //Vi väntar kort tid för att skulle den vara full vill vi hämta NY data och inte sitta på gammal data
+        xQueueSend(task_params->sensor_data_queue, &sensor_data, pdMS_TO_TICKS(50));
     }
 }

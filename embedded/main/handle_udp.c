@@ -20,6 +20,13 @@
 #include "lwip/sockets.h"   
 #include "lwip/netdb.h"      
 #include "lwip/err.h"        
+#include "esp_mac.h"
+
+// 1. Skicka connection request till servern
+// 2. få någon typ av ID tuillbaka
+// 3. Skicka sensordata till servern
+// 4. På en timer, skicka även ACK till servern att vi fortfarande är uppkopplade (behövs för att veta om vi disconnectat eller inte)
+
 
 
 #define UDP_PORT CONFIG_SERVER_PORT
@@ -28,7 +35,7 @@
 void run_udp_task(void* params) {
     ESP_LOGI("UDP", "Starting UDP task...");
     task_params_t *task_params = (task_params_t*) params;
-
+    
     ESP_LOGI("UDP", "Waiting for WiFi to connect...");
     // Vänta tills WiFi är anslutet
     if(params == NULL) {
@@ -57,6 +64,30 @@ void run_udp_task(void* params) {
     
     ESP_LOGI("UDP", "Socket created, sending to %s:%s", host_ip, UDP_PORT);
 
+    ConnectionPacket_t connection_packet;
+    connection_packet.type = 0;
+    ESP_ERROR_CHECK(esp_read_mac(connection_packet.mac_addr, ESP_MAC_WIFI_STA));
+
+    int err = sendto(sock, &connection_packet, sizeof(connection_packet), 0, (struct sockaddr*)&dest_addr, sizeof(dest_addr));
+    if (err < 0) {
+        ESP_LOGE("UDP", "Error occurred during sending: errno %d", errno);
+        vTaskDelete(NULL);
+        return;
+    }
+
+    // Vänta på ACK från servern
+    err = recv(sock, rx_buffer, sizeof(rx_buffer) - 1, 0);
+    if (err < 0) {
+        ESP_LOGE("UDP", "Error occurred during receiving: errno %d", errno);
+        vTaskDelete(NULL);
+        return;
+    } else {
+        rx_buffer[err] = 0;  // Null-terminate whatever we received and treat like a string
+        ESP_LOGI("UDP", "Received %d bytes: %s", err, rx_buffer);
+        //TODO: Check if the received data is correct
+        // If it is, we can start sending sensor data and keep the connection alive with some sort of timer or ACK every X seconds
+    }
+
     while (1) {
         sensor_payload_t global_sensor_packet;
         xQueueReceive(task_params->sensor_data_queue, &global_sensor_packet, portMAX_DELAY);
@@ -68,9 +99,7 @@ void run_udp_task(void* params) {
             break;
         }
 
-        ESP_LOGI("UDP", "Message sent");
-
-        vTaskDelay(pdMS_TO_TICKS(100)); // Vänta 1 sekund innan nästa skickning
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 
     if (sock != -1) {
@@ -80,3 +109,5 @@ void run_udp_task(void* params) {
     
     vTaskDelete(NULL);
 }
+
+//TODO: Edgecase: Internet dör / tappar connection. Vad händer då?

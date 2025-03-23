@@ -46,8 +46,7 @@ void app_main() {
     ESP_LOGI("main", "GOING INTO SENSOR TASK");
     xTaskCreate(handle_sensor_task, "sensor_task", 4096, &global_task_params, 5, NULL);
 
+    xEventGroupWaitBits(global_task_params.event_handle, BIT0 | BIT1 , pdFALSE, pdTRUE, portMAX_DELAY);
     ESP_LOGI("main", "GOING INTO UDP TASK");
     xTaskCreate(run_udp_task, "udp_task", 4096, &global_task_params, 5, NULL);
-
-
 }
