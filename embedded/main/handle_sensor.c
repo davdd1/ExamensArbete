@@ -18,6 +18,9 @@ void i2c_master_init() {
 
     printf("✅ I2C driver installerad!\n");
 }
+
+
+
 // 📌 Skriver till ett register
 void write_register(uint8_t reg, uint8_t value) {
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
@@ -54,6 +57,34 @@ void read_mpu6050_data(uint8_t start_reg, int16_t *data) {
     }
 }
 
+// 📌 Kalibreringsfunktion för gyroskopet
+// Funktionen samlar in ett antal mätvärden och beräknar medelvärdet (bias) för varje axel.
+// Dessa bias används sedan för att korrigera de råa gyromätningarna.
+void calibrate_gyro(float *bias_x, float *bias_y, float *bias_z) {
+    const int samples = 1000; // Antal samples för kalibreringen
+    int32_t sum_x = 0, sum_y = 0, sum_z = 0;
+    int16_t gyro_raw[3];
+
+    // Samla in 'samples' antal mätningar
+    for (int i = 0; i < samples; i++) {
+        // Läser gyroskopdata (start_reg 0x43 är registeradressen för gyroskopdata)
+        read_mpu6050_data(0x43, gyro_raw);
+        // Ackumulera mätvärdena
+        sum_x += gyro_raw[0];
+        sum_y += gyro_raw[1];
+        sum_z += gyro_raw[2];
+        // Kort fördröjning mellan varje mätning
+        vTaskDelay(pdMS_TO_TICKS(5));
+    }
+    
+    // Konvertera medelvärdet till grader per sekund (131 är sensitiviteten för ±250°/s)
+    *bias_x = (sum_x / (float)samples) / 131.0;
+    *bias_y = (sum_y / (float)samples) / 131.0;
+    *bias_z = (sum_z / (float)samples) / 131.0;
+
+    printf("Gyro kalibrerad: bias_x=%.2f, bias_y=%.2f, bias_z=%.2f\n", *bias_x, *bias_y, *bias_z);
+}
+
 void handle_sensor_task(void* params) {
     i2c_master_init();
     vTaskDelay(pdMS_TO_TICKS(1000));
@@ -66,7 +97,12 @@ void handle_sensor_task(void* params) {
 
     task_params_t *task_params = (task_params_t*) params;
 
+    float bias_x = 0, bias_y = 0, bias_z = 0;
 
+    // Kalibrera gyroskopet
+    printf("🔧 Kalibrerar gyroskop...\n");
+    calibrate_gyro(&bias_x, &bias_y, &bias_z);
+    printf("🔧 Gyro kalibrerad!\n");
 
     while (1) {
         // Läs accelerometerdata
@@ -82,6 +118,13 @@ void handle_sensor_task(void* params) {
         float gy = gyro[1] / 131.0;
         float gz = gyro[2] / 131.0;
 
+
+        
+        // Korrigera mätvärdena genom att subtrahera bias från kalibreringen
+        gx -= bias_x;
+        gy -= bias_y;
+        gz -= bias_z;
+        
         // Skicka data till UDP-tasken
         sensor_payload_t sensor_data = {
             .type = 1,
@@ -92,6 +135,7 @@ void handle_sensor_task(void* params) {
         };
 
         
+
         //vänta tills kön är tom innan vi skickar nästa data
         //Vi väntar kort tid för att skulle den vara full vill vi hämta NY data och inte sitta på gammal data
         xQueueSend(task_params->sensor_data_queue, &sensor_data, pdMS_TO_TICKS(50));
