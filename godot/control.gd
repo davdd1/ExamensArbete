@@ -3,8 +3,8 @@ extends Control
 var selected_game_index = -1
 
 func _ready() -> void:
-	WebSocketManager.register_player_list(get_node("PanelContainer2/VBoxContainer/playerList"))
-	var game_list = get_node("GameChoice/GameList")
+	WebSocketManager.register_player_list(get_node("PanelContainer2/VBoxContainer2/VBoxContainer/playerList"))
+	var game_list = get_node("GameChoice/VBoxContainer/GameList")
 	game_list.add_item("Pong")
 	game_list.add_item("Cool Game")
 	game_list.add_item("Not so cool game")
