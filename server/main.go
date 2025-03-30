@@ -27,6 +27,9 @@ var connectedDevices []string
 type SensorData struct {
 	GyroX float32 `json:"gyro_x"`
 	GyroY float32 `json:"gyro_y"`
+
+	MacList []string `json:"mac_adresses,omitempty"` // List of connected devices' MAC addresses.
+	Color string `json:"color"`
 }
 
 // --- Globala variabler för websocket-hantering ---
@@ -94,8 +97,13 @@ func broadcastSensorData(gyroX, gyroY float32) {
 	data := SensorData{
 		GyroX: gyroX,
 		GyroY: gyroY,
+		MacList: connectedDevices, // Skicka med listan över MAC-adresser.
+		Color: "red",
 	}
 
+	// fmt.Println("GyroX:", gyroX, "GyroY:", gyroY)
+	// Om det inte finns några anslutna enheter, returnera utan att skicka något.
+	// fmt.Println("data to send:", data)
 	// Omvandla strukturen till en JSON‑sträng.
 	message, err := json.Marshal(data)
 	if err != nil {
@@ -103,6 +111,7 @@ func broadcastSensorData(gyroX, gyroY float32) {
 		return
 	}
 
+	fmt.Println("JSON message:", string(message))
 	// Skicka meddelandet till varje ansluten klient.
 	clientsMu.Lock()
 	defer clientsMu.Unlock()
@@ -179,6 +188,7 @@ func udpReceiver() {
 				deltaY = 0
 			}
 
+			// fmt.Println("GyroX:", deltaX, "GyroY:", deltaY)
 			// Här skickar vi de mottagna värdena vidare via websocket.
 			broadcastSensorData(gyroX, gyroY)
 
