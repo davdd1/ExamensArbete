@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="2d-esp"
-run/main_scene="uid://da7upf5goigaw"
+run/main_scene="uid://brp6gcj5yxsrp"
 config/features=PackedStringArray("4.4", "GL Compatibility")
 config/icon="res://icon.svg"
 
