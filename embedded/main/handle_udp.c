@@ -84,7 +84,9 @@ void run_udp_task(void* params) {
         vTaskDelete(NULL);
         return;
     } else {
-        rx_buffer[err] = '\0';  // Null-terminera strängen
+        // byte 0 är ack
+        // byte 1 är färgindex 0 = RED, 1 = GREEN, 2 = BLUE
+        rx_buffer[err] = '\0';  
         switch(rx_buffer[1]) {
             case 0:
                 printf("color is RED\n");
@@ -102,7 +104,6 @@ void run_udp_task(void* params) {
                 printf("color is UNKNOWN\n");
                 break;
         }
-        
     }
 
     while (1) {
