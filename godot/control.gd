@@ -51,10 +51,7 @@ func update_blob(data):
 	var gyro_x = json.get("gyro_x", 0.0)
 	var gyro_y = json.get("gyro_y", 0.0)
 	
-	var correct_x = -gyro_y
-	var correct_y = gyro_x
-	
-	var velocity = Vector2(correct_x, correct_y)
+	var velocity = Vector2(gyro_x, gyro_y)
 	
 	for mac in macs:
 		# Skapa blob om den inte finns
