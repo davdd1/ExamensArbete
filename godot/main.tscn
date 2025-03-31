@@ -2,10 +2,10 @@
 
 [ext_resource type="Texture2D" uid="uid://pucgh0qbmij" path="res://assets/Bg.png" id="1_fbruq"]
 [ext_resource type="FontFile" uid="uid://cwd1tkm36irny" path="res://assets/pixel_font.ttf" id="2_bf3qf"]
-[ext_resource type="Script" uid="uid://dk6mporbd5vv5" path="res://main.gd" id="2_h0d34"]
-[ext_resource type="Script" uid="uid://co2pbku2l4ywq" path="res://player.gd" id="3_ul2rr"]
-[ext_resource type="Script" uid="uid://bqwshlpqp836d" path="res://cpu.gd" id="4_16hrx"]
-[ext_resource type="Script" uid="uid://7exnvuogwy0g" path="res://ball.gd" id="4_51vfc"]
+[ext_resource type="Script" uid="uid://dmodrsmg38b4g" path="res://main.gd" id="2_h0d34"]
+[ext_resource type="Script" uid="uid://b6ytxk87t54nc" path="res://player.gd" id="3_ul2rr"]
+[ext_resource type="Script" uid="uid://l2axvh63jnsu" path="res://cpu.gd" id="4_16hrx"]
+[ext_resource type="Script" uid="uid://c2tbnl1ykfpst" path="res://ball.gd" id="4_51vfc"]
 [ext_resource type="Script" uid="uid://d122mspb3euky" path="res://node.gd" id="7_7o1oi"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_6y131"]

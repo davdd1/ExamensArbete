@@ -9,8 +9,8 @@
 #include "handle_sensor.h"
 #include "handle_wifi.h"
 #include "handle_udp.h"
+#include "handle_led.h"
 #include "global_params.h"
-#include "led_strip.h" // WOOOOW
 /*
 ESP WORK FLOW:
 1. Starta wifi -> connecta till UDP Server -> VÄnta på svar ( Få ID ); Efter vi fått ID betyder det att vi nu är anslutna till servern eller är med i spelet
@@ -50,4 +50,10 @@ void app_main() {
     xEventGroupWaitBits(global_task_params.event_handle, BIT0 | BIT1 , pdFALSE, pdTRUE, portMAX_DELAY);
     ESP_LOGI("main", "GOING INTO UDP TASK");
     xTaskCreate(run_udp_task, "udp_task", 4096, &global_task_params, 5, NULL);
+
+    init_led();
+
+    vTaskDelay(pdMS_TO_TICKS(3000));
+
+    set_led_green();
 }
