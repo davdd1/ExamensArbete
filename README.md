@@ -1,37 +1,55 @@
-# Examensarbete - Jesper Morais & David Stenman👍
+# 🎮 IoT Motion Controller  
+### Jesper Morais & David Stenman
 
-## IoT Controller - **Beskrivning**
+## Overview
 
-Projektet syftar till att utveckla en trådlös, batteridriven kontroller baserad på ESP32 med en integrerad gyrosensor (t.ex. MPU6050).
+This project explores the use of motion-controlled input using ESP32-based hardware in a scalable, wireless, and low-latency environment. Each device operates as a standalone motion controller using its onboard IMU (e.g., MPU6050), capable of tracking tilt, orientation, and acceleration.
 
-Denna kontroller är utformad som en flexibel plattform för att styra och interagera med flera olika applikationer. 
+Sensor data is transmitted via UDP to a **headless Go server**, which is responsible for interpreting input and broadcasting it to connected WebSocket clients. This modular design ensures that the server can be easily integrated into different applications and frontends – from games to industrial interfaces.
 
-Med hjälp av rörelsedata från gyroskopet och accelerometern kan kontrollern samla in information om vinklar, rörelser och rotation, och överföra dessa data i realtid till en Go-server via Wi-Fi.
+In the current implementation, a Godot-based UI visualizes the motion of each controller as a unique, colored on-screen entity (“blob”), enabling multiple users to interact in real time.
 
-### [ ESP32 BOOT ] 
-   → Starta WiFi (Task 1)
-   → Anslut till servern (UDP)
-   → Skicka anslutningspaket
+---
 
-### [ GO SERVER ]
-   → Ta emot ny spelare
-   → Skapa boll på skärmen
-   → Skicka tillbaka Player ID
+## 🧩 Architecture
 
-### [ ESP32 ]
-   → Starta sensor-task (Task 2)
-   → Läs gyroskopdata
-   → Skicka sensor-data till servern (Task 3)
+### ESP32 Controller (Client)
+- Collects motion data (accelerometer and gyroscope)
+- Sends periodic updates via UDP
+- Identified uniquely via MAC address
 
-### [ GO SERVER ]
-   → Ta emot gyro-data
-   → Konvertera gyro → position
-   → Skicka uppdaterad position till alla spelare
+### Go Server (Headless, Modular)
+- Listens for connection requests and sensor data
+- Assigns a unique color index to each client
+- Forwards processed motion data to WebSocket clients
+- Designed to be frontend-agnostic
 
-### [ WEBSOCKET / GAME ENGINE ]
-   → Rendera boll på skärmen i realtid
+### Godot Client (Example Frontend)
+- Receives WebSocket updates
+- Renders and animates real-time motion of each player
+- Associates blobs with MAC address and assigned color
 
-### [ EVENTUELL INTERAKTION ]
-   → Om ESP32 skakas: "Jump!"
-   → Om WiFi tappar kontakt: "Pausa"
-   → Om spelet avslutas: "Stäng anslutning"
+---
+
+## 💡 Use Cases
+
+- Multiplayer mini-games controlled through motion input  
+- Interactive installations where physical gestures control on-screen elements  
+- Educational tools for demonstrating motion sensing and real-time networking  
+- Custom IoT dashboards for device orientation feedback  
+- Prototyping gesture-based interfaces for smart environments  
+
+---
+
+## 🎮 Interaction Design (Current Demo Capabilities)
+
+The current demo implementation visualizes each controller as a moving blob in 2D space. While simple in presentation, it lays the foundation for more advanced interaction mechanics:
+
+- **Tilt Control**: Smooth movement across screen based on device inclination  
+- **Rotation Input**: Gyroscope data available for rotation-based gestures  
+- **Impulse Recognition**: High acceleration along Z-axis can be interpreted as actions like jump, dash, or selection  
+- **Modular Input Pipeline**: Easily extended to gesture recognition, custom thresholds, or contextual triggers  
+
+---
+
+This modular system highlights the potential of motion input in lightweight multiplayer experiences and embedded systems — all without the need for tethered hardware or high-cost sensors.
