@@ -38,18 +38,6 @@ In the current implementation, a Godot-based UI visualizes the motion of each co
 - Educational tools for demonstrating motion sensing and real-time networking  
 - Custom IoT dashboards for device orientation feedback  
 - Prototyping gesture-based interfaces for smart environments  
-
----
-
-## 🎮 Interaction Design (Current Demo Capabilities)
-
-The current demo implementation visualizes each controller as a moving blob in 2D space. While simple in presentation, it lays the foundation for more advanced interaction mechanics:
-
-- **Tilt Control**: Smooth movement across screen based on device inclination  
-- **Rotation Input**: Gyroscope data available for rotation-based gestures  
-- **Impulse Recognition**: High acceleration along Z-axis can be interpreted as actions like jump, dash, or selection  
-- **Modular Input Pipeline**: Easily extended to gesture recognition, custom thresholds, or contextual triggers  
-
 ---
 
 This modular system highlights the potential of motion input in lightweight multiplayer experiences and embedded systems — all without the need for tethered hardware or high-cost sensors.
