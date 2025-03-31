@@ -5,12 +5,18 @@ extends Node
 
 var player_list_node = null
 
+var current_scene_ref
+
+func set_current_scene(scene):
+	current_scene_ref = scene
+
 var red_icon = preload("res://RÖD.png")
 var green_icon = preload("res://GRÖN.png")
 var blue_icon = preload("res://BLÅ.png")
 
 func register_player_list(node):
 	player_list_node = node
+	
 # Skapa en WebSocketPeer-instans
 var socket: WebSocketPeer = WebSocketPeer.new()
 
@@ -36,7 +42,7 @@ func _process(delta: float) -> void:
 		# Medan det finns meddelanden i kön, hämta dem.
 		while socket.get_available_packet_count() > 0:
 			var received: String = socket.get_packet().get_string_from_utf8()
-			
+			print(received)
 			# Använd JSON-klassen för att parsa den mottagna strängen.
 			var json := JSON.new()
 			var parse_error = json.parse(received)
@@ -44,12 +50,15 @@ func _process(delta: float) -> void:
 				#print(received)
 				# Hämta resultatet (ett Dictionary om allt gick bra)
 				var data = json.get_data()
+				
 				if typeof(data) == TYPE_DICTIONARY:
+					if current_scene_ref and current_scene_ref.has_method("update_blob"):
+						current_scene_ref.update_blob(data)
 					sensor_gyro_y = float(data.get("gyro_y", 0))
 					# print("Mottaget sensor data: ", data)
 					if data.has("color"):
 						color = data["color"]
-						print(color)
+						#print(color)
 					# Kolla om vi fått en lista över MAC-adresser:
 					if data.has("mac_adresses"):
 						# print("has mac")

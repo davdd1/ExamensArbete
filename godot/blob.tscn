@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://bwmvsi6266vjy"]
+
+[ext_resource type="Script" uid="uid://chrmly8imkwdv" path="res://blob.gd" id="1_iplyg"]
+
+[node name="Blob" type="Node2D"]
+script = ExtResource("1_iplyg")
+
+[node name="macname" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 23.0
