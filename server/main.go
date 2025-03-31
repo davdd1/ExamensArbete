@@ -1,5 +1,3 @@
-// ✅ Uppdaterad version av din kod med korrekt MAC-hantering per UDP-adress
-
 package main
 
 import (
@@ -73,7 +71,6 @@ func startWebSocketServer() {
 	}
 }
 
-// 🆕 Modifierad: skickar bara aktuell MAC och färg
 func broadcastSensorData(gyroX, gyroY float32, macAddr string, color string) {
 	data := SensorData{
 		GyroX:   gyroX,
@@ -146,7 +143,7 @@ func udpReceiver() {
 
 			macStr := macMapping[addr.String()]
 			if macStr == "" {
-				log.Println("⚠️ MAC-adress saknas för", addr.String())
+				log.Println("MAC-adress saknas för", addr.String())
 				continue
 			}
 
@@ -156,7 +153,6 @@ func udpReceiver() {
 	}
 }
 
-// 🆕 Modifierad: sparar macMapping[addr.String()] = macStr
 func handle_ACK_request(conn *net.UDPConn, addr *net.UDPAddr, buf []byte) {
 	macAddr := buf[1:7]
 	macStr := fmt.Sprintf("%02X:%02X:%02X:%02X:%02X:%02X",
