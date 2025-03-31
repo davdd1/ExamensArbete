@@ -25,9 +25,12 @@ type SensorData struct {
 }
 
 var (
-	clients    = make(map[*websocket.Conn]bool)
-	clientsMu  sync.Mutex
-	macMapping = make(map[string]string) // UDP address string -> MAC string
+	clients     = make(map[*websocket.Conn]bool)
+	clientsMu   sync.Mutex
+	macMapping  = make(map[string]string) // UDP address string -> MAC string
+	macColorMap = make(map[string]string) // MAC string -> färg
+	colorList   = []string{"red", "green", "blue"}
+	colorIndex  = 0
 )
 
 var upgrader = websocket.Upgrader{
@@ -147,7 +150,8 @@ func udpReceiver() {
 				continue
 			}
 
-			broadcastSensorData(gyroX, gyroY, macStr, "blue")
+			color := macColorMap[macStr]
+			broadcastSensorData(gyroX, gyroY, macStr, color)
 			time.Sleep(10 * time.Millisecond)
 		}
 	}
@@ -161,12 +165,30 @@ func handle_ACK_request(conn *net.UDPConn, addr *net.UDPAddr, buf []byte) {
 	macMapping[addr.String()] = macStr
 	fmt.Println("Device mapped:", addr.String(), "->", macStr)
 
-	ack := []byte{1}
+	// Tilldela unik färgindex
+	var assignedIndex int
+	if _, exists := macColorMap[macStr]; !exists {
+		assignedIndex = colorIndex % len(colorList)
+		macColorMap[macStr] = colorList[assignedIndex]
+		colorIndex++
+	} else {
+		// Hitta index på redan tilldelad färg
+		color := macColorMap[macStr]
+		for i, c := range colorList {
+			if c == color {
+				assignedIndex = i
+				break
+			}
+		}
+	}
+
+	// Skicka: byte 0 = ACK, byte 1 = färgindex 0 red, 1 green, 2 blue
+	ack := []byte{1, byte(assignedIndex)}
 	_, err := conn.WriteToUDP(ack, addr)
 	if err != nil {
-		log.Println("Failed to send connection acknowledgment:", err)
+		log.Println("Failed to send connection acknowledgment with index:", err)
 	} else {
-		log.Println("Connection acknowledgment sent to", addr.String())
+		log.Printf("ACK sent to %s with color index %d (%s)\n", addr.String(), assignedIndex, colorList[assignedIndex])
 	}
 }
 

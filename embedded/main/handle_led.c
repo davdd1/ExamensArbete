@@ -115,13 +115,13 @@ void set_led_off() {
 }
 
 void set_led_red() {
-    set_led_color(255, 0, 0);
+    set_led_color(40, 0, 0);
 }
 
 void set_led_green() {
-    set_led_color(0, 255, 0);
+    set_led_color(0, 40, 0);
 }
 
 void set_led_blue() {
-    set_led_color(0, 0, 255);
+    set_led_color(0, 0, 40);
 }

@@ -22,6 +22,8 @@
 #include "lwip/err.h"        
 #include "esp_mac.h"
 
+#include "handle_led.h"
+
 // 1. Skicka connection request till servern
 // 2. få någon typ av ID tuillbaka
 // 3. Skicka sensordata till servern
@@ -82,10 +84,25 @@ void run_udp_task(void* params) {
         vTaskDelete(NULL);
         return;
     } else {
-        rx_buffer[err] = 0;  // Null-terminate whatever we received and treat like a string
-        ESP_LOGI("UDP", "Received %d bytes: %s", err, rx_buffer);
-        //TODO: Check if the received data is correct
-        // If it is, we can start sending sensor data and keep the connection alive with some sort of timer or ACK every X seconds
+        rx_buffer[err] = '\0';  // Null-terminera strängen
+        switch(rx_buffer[1]) {
+            case 0:
+                printf("color is RED\n");
+                set_led_red();
+                break;
+            case 1:
+                printf("color is GREEN\n");
+                set_led_green();
+                break;
+            case 2:
+                printf("color is BLUE\n");
+                set_led_blue();
+                break;
+            default:
+                printf("color is UNKNOWN\n");
+                break;
+        }
+        
     }
 
     while (1) {
