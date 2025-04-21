@@ -1,17 +1,15 @@
-#include "handle_led.h" 
+#include "handle_led.h"
 
 #define LED_STRIP_GPIO_NUM GPIO_NUM_8
-#define LED_STRIP_LED_NUMBERS 1
+#define LED_STRIP_LED_AMOUNT 1
 #define LED_STRIP_RMT_RES_HZ 10000000 // 10MHz resolution
 
 static led_strip_handle_t led_strip;
 static TaskHandle_t rainbow_task_handle = NULL;
 
-static void led_rainbow_task(void *pvParameters)
-{
+static void led_rainbow_task(void* pvParameters) {
     uint8_t hue = 0;
-    while (1)
-    {
+    while (1) {
         uint8_t r, g, b;
 
         // Simple HSV to RGB conversion
@@ -22,8 +20,7 @@ static void led_rainbow_task(void *pvParameters)
         uint8_t q = 255 - remainder;
         uint8_t t = remainder;
 
-        switch (region)
-        {
+        switch (region) {
         case 0:
             r = 255;
             g = t;
@@ -76,18 +73,18 @@ static void stop_rainbow_task(void) {
 void init_led() {
     led_strip_config_t strip_config = {
         .strip_gpio_num = LED_STRIP_GPIO_NUM,
-        .max_leds = LED_STRIP_LED_NUMBERS,
+        .max_leds = LED_STRIP_LED_AMOUNT,
         .color_component_format = LED_STRIP_COLOR_COMPONENT_FMT_GRB,
         .led_model = LED_MODEL_WS2812,
         .flags.invert_out = false,
     };
-    
+
     led_strip_rmt_config_t rmt_config = {
         .clk_src = RMT_CLK_SRC_DEFAULT,
         .resolution_hz = LED_STRIP_RMT_RES_HZ,
         .flags.with_dma = false,
     };
-    
+
     ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &led_strip));
 
     set_led_off(); // Turn off the LED strip initially
@@ -98,7 +95,7 @@ void set_led_rainbow() {
     if (rainbow_task_handle != NULL) {
         return;
     }
-    
+
     xTaskCreate(led_rainbow_task, "led_rainbow_task", 2048, NULL, 2, &rainbow_task_handle);
 }
 
@@ -114,14 +111,8 @@ void set_led_off() {
     ESP_ERROR_CHECK(led_strip_refresh(led_strip));
 }
 
-void set_led_red() {
-    set_led_color(40, 0, 0);
-}
+void set_led_red() { set_led_color(40, 0, 0); }
 
-void set_led_green() {
-    set_led_color(0, 40, 0);
-}
+void set_led_green() { set_led_color(0, 40, 0); }
 
-void set_led_blue() {
-    set_led_color(0, 0, 40);
-}
+void set_led_blue() { set_led_color(0, 0, 40); }

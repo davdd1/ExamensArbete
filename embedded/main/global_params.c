@@ -3,6 +3,4 @@
 
 task_params_t global_task_params;
 
-sensor_payload_t global_sensor_packet;
-
-ConnectionPacket_t global_connection_packet;
+packet_t global_packet;
