@@ -57,5 +57,7 @@ void app_main() {
 
     vTaskDelay(pdMS_TO_TICKS(3000));
 
+    set_led_rainbow();
+
     // set_led_green();
 }
