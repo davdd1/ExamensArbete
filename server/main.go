@@ -158,6 +158,7 @@ func udpReceiver() {
 }
 
 func handle_ACK_request(conn *net.UDPConn, addr *net.UDPAddr, buf []byte) {
+	// TODO FIXA SÅ VI KOLLAR MACADDRES PÅ RÄTT STÄLLE
 	macAddr := buf[1:7]
 	macStr := fmt.Sprintf("%02X:%02X:%02X:%02X:%02X:%02X",
 		macAddr[0], macAddr[1], macAddr[2], macAddr[3], macAddr[4], macAddr[5])
