@@ -57,5 +57,5 @@ void app_main() {
 
     //set_led_rainbow();
 
-    set_led_green();
+    //set_led_green();
 }

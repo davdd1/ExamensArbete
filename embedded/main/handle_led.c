@@ -88,7 +88,7 @@ void set_led_color(uint8_t r, uint8_t g, uint8_t b)
 {
     printf("Setting LED color: R=%d, G=%d, B=%d\n", r, g, b);
     //stop_rainbow_task(); // Stop rainbow effect before setting a static color
-    set_led_off();
+    //set_led_off();
     ESP_ERROR_CHECK(led_strip_set_pixel(led_strip, 0, r, g, b));
     ESP_ERROR_CHECK(led_strip_refresh(led_strip));
 }
