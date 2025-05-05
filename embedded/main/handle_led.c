@@ -31,11 +31,16 @@ static void led_rainbow_task(void* pvParameters)
     }
 }
 
+// TODO: FIX THIS, ITS NOT WORKING, can't find the handle to the task
 static void stop_rainbow_task(void)
-{
+{   
+    printf("Stopping rainbow task\n");
     if (rainbow_task_handle != NULL) {
         vTaskDelete(rainbow_task_handle);
         rainbow_task_handle = NULL;
+        printf("Rainbow task stopped\n");
+    }else{
+        printf("Rainbow task was not running or could't find handle\n"); // ALWAYS HERE
     }
 }
 
@@ -70,6 +75,7 @@ void init_led()
 
 void set_led_rainbow()
 {
+    printf("Starting rainbow task\n");
     // If rainbow is already running, do nothing
     if (rainbow_task_handle != NULL) {
         return;
@@ -80,20 +86,22 @@ void set_led_rainbow()
 
 void set_led_color(uint8_t r, uint8_t g, uint8_t b)
 {
-    stop_rainbow_task(); // Stop rainbow effect before setting a static color
+    printf("Setting LED color: R=%d, G=%d, B=%d\n", r, g, b);
+    //stop_rainbow_task(); // Stop rainbow effect before setting a static color
+    set_led_off();
     ESP_ERROR_CHECK(led_strip_set_pixel(led_strip, 0, r, g, b));
     ESP_ERROR_CHECK(led_strip_refresh(led_strip));
 }
 
 void set_led_off()
 {
-    stop_rainbow_task();
+    //stop_rainbow_task();
     ESP_ERROR_CHECK(led_strip_set_pixel(led_strip, 0, 0, 0, 0));
     ESP_ERROR_CHECK(led_strip_refresh(led_strip));
 }
 
-void set_led_red() { set_led_color(255, 0, 0); }
+void set_led_red() { set_led_color(70, 0, 0); }
 
-void set_led_green() { set_led_color(0, 255, 0); }
+void set_led_green() { set_led_color(0, 70, 0); }
 
-void set_led_blue() { set_led_color(0, 0, 255); }
+void set_led_blue() { set_led_color(0, 0, 70); }
