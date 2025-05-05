@@ -60,7 +60,7 @@ func UdpReceiver() {
 			}
 
 			color := macColorMap[macStr]
-			broadcastSensorData(gyroX, gyroY, macStr, color)
+			BroadcastSensorData(gyroX, gyroY, macStr, color)
 			time.Sleep(10 * time.Millisecond)
 		}
 	}
