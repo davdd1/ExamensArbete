@@ -18,26 +18,32 @@ typedef struct task_params {
 extern task_params_t global_task_params;
 
 // Packet types
-typedef enum packet_type { 
-    TYPE_CONNECTION_REQUEST = 0, 
-    TYPE_SENSOR_DATA = 1 
-} packet_type_t;
+typedef enum packet_type {
+    TYPE_CONNECTION_REQUEST = 0,
+    TYPE_SENSOR_DATA = 1
+} packet_type_e;
 
 // Unified packet structure
 typedef struct Packet {
-    packet_type_t type; // First field is the packet type
+    packet_type_e type; // First field is the packet type
     union {
         struct { // Connection request data
             uint8_t mac_addr[6];
         };
         struct { // Sensor data
-            uint32_t player_id;
-            float gyro_x;
-            float gyro_y;
-            float gyro_z;
-        };
+            // Gyroskop
+            float gyro_x, gyro_y, gyro_z;
+
+            // Accelerometer
+            float accel_x, accel_y, accel_z;
+
+            // Joystick
+            float joy_x, joy_y;
+            uint8_t joy_is_pressed; // 0 = not pressed, 1 = pressed
+            uint8_t _padding[3]; // 3 bytes padding at the end → 4-byte alignment
+        } sensor;
     };
-} packet_t;
+} packet_t; // Total 40 bytes
 
 // Declare an external instance of the unified packet
 extern packet_t global_packet;

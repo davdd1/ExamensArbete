@@ -5,6 +5,6 @@ idf_component_register(SRCS
                         "main.c" 
                         "handle_wifi.c" 
                         "handle_sensor.c"
-                        "handle_joystick.c"
+                       
                     INCLUDE_DIRS 
                         "./include")
