@@ -68,7 +68,9 @@ void run_udp_task(void* params) {
     packet_t connection_packet;
     connection_packet.type = TYPE_CONNECTION_REQUEST;
     ESP_ERROR_CHECK(esp_read_mac(connection_packet.mac_addr, ESP_MAC_WIFI_STA));
-
+    ESP_LOGI("UDP", "MAC Address: %02x:%02x:%02x:%02x:%02x:%02x\n", connection_packet.mac_addr[0],
+             connection_packet.mac_addr[1], connection_packet.mac_addr[2], connection_packet.mac_addr[3],
+             connection_packet.mac_addr[4], connection_packet.mac_addr[5]);
     int err = sendto(sock, &connection_packet, sizeof(connection_packet), 0, (struct sockaddr*)&dest_addr,
                      sizeof(dest_addr));
     if (err < 0) {
@@ -90,15 +92,15 @@ void run_udp_task(void* params) {
         switch (rx_buffer[1]) {
         case 0:
             printf("color is RED\n");
-            set_led_red();
+            //set_led_red();
             break;
         case 1:
             printf("color is GREEN\n");
-            set_led_green();
+            //set_led_green();
             break;
         case 2:
             printf("color is BLUE\n");
-            set_led_blue();
+            //set_led_blue();
             break;
         default:
             printf("color is UNKNOWN\n");
@@ -109,6 +111,14 @@ void run_udp_task(void* params) {
     while (1) {
         packet_t global_sensor_packet;
         xQueueReceive(task_params->sensor_data_queue, &global_sensor_packet, portMAX_DELAY);
+        memcpy(global_sensor_packet.mac_addr, connection_packet.mac_addr, sizeof(connection_packet.mac_addr)); // Set MAC address in the packet
+        //TODO: REMOVE IF NOT TESTING WITHOUT SENSOR DATA
+        // global_sensor_packet.player_id = 2;
+        // global_sensor_packet.gyro_x = 4.23;
+        // global_sensor_packet.gyro_y = 5.23;
+        // global_sensor_packet.gyro_z = 6.23;
+        // printf("Sending sensor data: gyro_x=%.2f, gyro_y=%.2f, gyro_z=%.2f, playerID=%ld\n", global_sensor_packet.gyro_x,
+        //        global_sensor_packet.gyro_y, global_sensor_packet.gyro_z, global_sensor_packet.player_id);
 
         int err = sendto(sock, &global_sensor_packet, sizeof(global_sensor_packet), 0,
                          (struct sockaddr*)&dest_addr, sizeof(dest_addr));
