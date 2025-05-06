@@ -10,7 +10,7 @@
 #define MPU6050_ADDR 0x68 // Standardadressen
 #define PWR_MGMT_1 0x6B // Strömhanteringsregister
 #define ACCEL_XOUT_H 0x3B // Accelerometerdata börjar här
-#define ACCEL_CONFIG 0x1C
+#define ACCEL_CONFIG 0x1C // Accelerometerkonfiguration
 
 // FOR ESP32-S3, UNSURE ABOUT C6, TODO: ADD
 #define VRX_CH       ADC_CHANNEL_7    // GPIO18
