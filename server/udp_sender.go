@@ -8,14 +8,7 @@ import(
 )
 
 
-func BroadcastSensorData(gyroX, gyroY float32, macAddr string, color string) {
-	data := SensorData{
-		GyroX:   gyroX,
-		GyroY:   gyroY,
-		MacList: []string{macAddr},
-		Color:   color,
-	}
-
+func BroadcastSensorData(data SensorData) {
 	message, err := json.Marshal(data)
 	if err != nil {
 		log.Println("Fel vid JSON-marshal:", err)
