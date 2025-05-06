@@ -120,7 +120,6 @@ void handle_sensor_task(void* params) {
         gy -= bias_y;
         gz -= bias_z;
 
-        // Skicka data till UDP-tasken
         packet_t sensor_data = {
             .type = TYPE_SENSOR_DATA,
             .player_id = 1, // TEMPORARY
