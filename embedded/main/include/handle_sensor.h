@@ -12,7 +12,7 @@
 #define ACCEL_XOUT_H 0x3B // Accelerometerdata börjar här
 #define ACCEL_CONFIG 0x1C // Accelerometerkonfiguration
 
-// FOR ESP32-S3, UNSURE ABOUT C6, TODO: ADD
+// FOR ESP32-S3: Verify ADC channel configuration for GPIO17 (ADC_CHANNEL_6) and GPIO18 (ADC_CHANNEL_7).
 #define VRX_CH       ADC_CHANNEL_7    // GPIO18
 #define VRY_CH       ADC_CHANNEL_6    // GPIO17
 #define ADC2_WIDTH   ADC_WIDTH_BIT_12
