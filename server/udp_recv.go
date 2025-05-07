@@ -30,7 +30,7 @@ func UdpReceiver() {
 			continue
 		}
 
-		if n < packetSize {
+		if n < packetSize && buf[0] != 0 {
 			log.Printf("För kort paket: %d byte (förväntat %d)", n, packetSize)
 			continue
 		}
