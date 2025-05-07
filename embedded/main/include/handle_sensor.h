@@ -13,10 +13,17 @@
 #define ACCEL_CONFIG 0x1C // Accelerometerkonfiguration
 
 // FOR ESP32-S3: Verify ADC channel configuration for GPIO17 (ADC_CHANNEL_6) and GPIO18 (ADC_CHANNEL_7).
+#ifdef CONFIG_IDF_TARGET_ESP32S3
 #define VRX_CH       ADC_CHANNEL_7    // GPIO18
 #define VRY_CH       ADC_CHANNEL_6    // GPIO17
 #define ADC2_WIDTH   ADC_WIDTH_BIT_12
 #define ADC2_ATTEN   ADC_ATTEN_DB_11  // 0–3.3V range
+#endif
+
+#ifdef CONFIG_IDF_TARGET_ESP32C6
+#define VRX_CH       ADC1_CHANNEL_4    // GPIO3
+#define VRY_CH       ADC1_CHANNEL_2    // GPIO4
+#endif
 
 // Joystick center / deadzone
 #define JOY_CENTER       2048

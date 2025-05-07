@@ -7,12 +7,12 @@
 #include "global_params.h"
 #include "math.h"
 
-static float normalize(int raw)
+static float normalize(int raw, int center)
 {
-    int delta = raw - JOY_CENTER;
+    int delta = raw - center;
     if (abs(delta) < JOY_DEADZONE)
         return 0.0f;
-    float max_travel = (float)(JOY_CENTER - JOY_DEADZONE);
+    float max_travel = (float)(center - JOY_DEADZONE);
     float norm = (float)delta / max_travel;
     if (norm > 1.0f)
         norm = 1.0f;
@@ -103,12 +103,43 @@ void calibrate_gyro(float* bias_x, float* bias_y, float* bias_z)
     printf("Gyro kalibrerad: bias_x=%.2f, bias_y=%.2f, bias_z=%.2f\n", *bias_x, *bias_y, *bias_z);
 }
 
+static int joy_center_x = 0, joy_center_y = 0;
+
+static void calibrate_joystick(int samples)
+{
+    int64_t sum_x = 0, sum_y = 0;
+    int raw;
+
+    printf("🎮 Kalibrerar joystick-center, sitt stilla...\n");
+    for (int i = 0; i < samples; i++) {
+        // Läs X
+        raw = adc1_get_raw(VRX_CH);
+        sum_x += raw;
+        // Läs Y
+        raw = adc1_get_raw(VRY_CH);
+        sum_y += raw;
+        vTaskDelay(pdMS_TO_TICKS(5));
+    }
+    joy_center_x = sum_x / samples;
+    joy_center_y = sum_y / samples;
+    printf("Joystick kalibrerad: center_x=%d, center_y=%d\n", joy_center_x, joy_center_y);
+}
+
 void handle_sensor_task(void* params)
 {
     i2c_master_init();
+    #ifdef CONFIG_IDF_TARGET_ESP32S3
     ESP_ERROR_CHECK(adc2_config_channel_atten(VRX_CH, ADC2_ATTEN));
     ESP_ERROR_CHECK(adc2_config_channel_atten(VRY_CH, ADC2_ATTEN));
+    #endif
 
+    #ifdef CONFIG_IDF_TARGET_ESP32C6
+    ESP_ERROR_CHECK(adc1_config_width(ADC_WIDTH_BIT_12));
+    ESP_ERROR_CHECK(adc1_config_channel_atten(VRX_CH, ADC_ATTEN_DB_12));
+    ESP_ERROR_CHECK(adc1_config_channel_atten(VRY_CH, ADC_ATTEN_DB_12));
+    #endif
+    
+    esp_rom_gpio_pad_select_gpio(SW_GPIO);
     gpio_set_direction(SW_GPIO, GPIO_MODE_INPUT);
     gpio_pullup_en(SW_GPIO);
 
@@ -128,6 +159,7 @@ void handle_sensor_task(void* params)
     // Kalibrera gyroskopet
     printf("🔧 Kalibrerar gyroskop...\n");
     calibrate_gyro(&bias_x, &bias_y, &bias_z);
+    calibrate_joystick(100);
     printf("🔧 Gyro kalibrerad!\n");
 
     while (1) {
@@ -151,6 +183,7 @@ void handle_sensor_task(void* params)
         gz -= bias_z;
 
         int raw_x = 0, raw_y = 0;
+        #ifdef CONFIG_IDF_TARGET_ESP32S3
         if (adc2_get_raw(VRX_CH, ADC2_WIDTH, &raw_x) != ESP_OK) {
             ESP_LOGE("ADC", "Failed to read VRX channel");
             raw_x = JOY_CENTER; // Sätt till center om det misslyckas
@@ -159,17 +192,28 @@ void handle_sensor_task(void* params)
             ESP_LOGE("ADC", "Failed to read VRY channel");
             raw_y = JOY_CENTER; // Sätt till center om det misslyckas
         }
+        float joy_x = -normalize(raw_y, JOY_CENTER);
+        float joy_y = -normalize(raw_x, JOY_CENTER);
+        #endif
+
+        #ifdef CONFIG_IDF_TARGET_ESP32C6
+        raw_x = adc1_get_raw(VRX_CH);
+        
+        raw_y = adc1_get_raw(VRY_CH);
+        //ESP_LOGI("JOY_RAW", "raw_x=%d, raw_y=%d", raw_x, raw_y);
+        float joy_x = -normalize(raw_x, joy_center_x);
+        float joy_y = -normalize(raw_y, joy_center_y);
+        #endif
 
         // MED RÄTT ORIENTERING PÅ JOYSTICKEN (KABLARNA UPPÅT), X-AXEL + är höger, Y-AXEL + är uppåt
         // Joystick orientation verified: cables upward, X-axis + is right, Y-axis + is up.
-        float joy_x = -normalize(raw_y);
-        float joy_y = -normalize(raw_x);
+
         uint8_t pressed = (uint8_t)(gpio_get_level(SW_GPIO) == 0);
 
         // 📋 DEBUG output
         // ESP_LOGI("MPU6050", "Accel[g]  ax: %.2f, ay: %.2f, az: %.2f", ax, ay, az);
         // ESP_LOGI("MPU6050", "Gyro[°/s] gx: %.2f, gy: %.2f, gz: %.2f", gx, gy, gz);
-        // ESP_LOGI("JOY", "Joystick: x: %.2f, y: %.2f, pressed: %d", joy_x, joy_y, pressed);
+        ESP_LOGI("JOY", "Joystick: x: %.2f, y: %.2f, pressed: %d", joy_x, joy_y, pressed);
 
         packet_t sensor_data = {
             .type = TYPE_SENSOR_DATA,
