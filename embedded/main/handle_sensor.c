@@ -161,7 +161,7 @@ void handle_sensor_task(void* params)
         }
 
         // MED RÄTT ORIENTERING PÅ JOYSTICKEN (KABLARNA UPPÅT), X-AXEL + är höger, Y-AXEL + är uppåt
-        // TODO: ANTAGLIGEN ÄNDRA!
+        // Joystick orientation verified: cables upward, X-axis + is right, Y-axis + is up.
         float joy_x = -normalize(raw_y);
         float joy_y = -normalize(raw_x);
         uint8_t pressed = (uint8_t)(gpio_get_level(SW_GPIO) == 0);
