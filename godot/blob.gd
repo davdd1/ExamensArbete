@@ -5,10 +5,10 @@ var smooth_velocity := Vector2.ZERO
 @export var speed := 500
 @export var radius := 20
 var color := Color.RED
-var mac := "text"
+var mac := "Jesper"
 
 func _ready():
-	#$macname.text = mac
+	$macname.text = mac
 	queue_redraw()
 
 func set_velocity(v: Vector2):
@@ -23,11 +23,11 @@ func _process(delta):
 		position += smooth_velocity * delta * speed
 
 	var screen_size = get_viewport_rect().size
-	#position.x = clamp(position.x, radius, screen_size.x - radius)
-	#position.y = clamp(position.y, radius, screen_size.y - radius)
+	position.x = clamp(position.x, radius, screen_size.x - radius)
+	position.y = clamp(position.y, radius, screen_size.y - radius)
 
 	# Flytta texten ovanför blobben
-	#$macname.position = Vector2(0, -radius - 10)
+	$macname.position = Vector2(0, -radius - 10)
 	queue_redraw()
 
 func _draw():
