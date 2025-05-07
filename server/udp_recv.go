@@ -95,23 +95,32 @@ func handle_ACK_request(conn *net.UDPConn, addr *net.UDPAddr, buf []byte) {
 
 
 func handleSensor(pkt Packet, addr *net.UDPAddr) {
-	//börjar med att kolla om vi har en MAC-mappning för den här adressen
+    // Hämta MAC-sträng för den här UDP-adressen
     macStr := macMapping[addr.String()]
     if macStr == "" {
         log.Println("Ingen MAC-mappning för", addr)
         return
     }
-	// Kolla färgen för Mac-adressen, så vi kan skicka den till godot
+
+    // Hämta färgen för den här MAC:en
     color := macColorMap[macStr]
 
-    // Skicka vidare ALLA fält till WebSocket
+    // Bygg upp SensorData med alla fält
     data := SensorData{
-        PlayerID: pkt.PlayerID,
-        GyroX:    pkt.GyroX,
-        GyroY:    pkt.GyroY,
-        GyroZ:    pkt.GyroZ,
-        MacList:  []string{macStr},
-        Color:    color,
+        GyroX:       pkt.GyroX,
+        GyroY:       pkt.GyroY,
+        GyroZ:       pkt.GyroZ,
+        AccelX:      pkt.AccelX,
+        AccelY:      pkt.AccelY,
+        AccelZ:      pkt.AccelZ,
+        JoystickX:   pkt.JoystickX,
+        JoystickY:   pkt.JoystickY,
+        ButtonState: pkt.ButtonState != 0,      // konvertera uint8 → bool
+        MacList:     []string{macStr},
+        Color:       color,
+        // BatteryLevel lämnas utelämnad tills vi börjar skicka den
     }
+
+    // Skicka vidare som JSON till alla WebSocket-klienter
     BroadcastSensorData(data)
 }
