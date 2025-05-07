@@ -24,18 +24,6 @@ type Packet struct {
 const packetSize = 1 /*Type*/ + 3 /*pad*/ + 8*4 /*8 floats*/ + 1 /*ButtonState*/ + 3 /*trailing pad*/
 // -> 40
 
-// SensorData innehåller endast en MAC per meddelande
-// detta skickas till Godot via WebSocket
-// type SensorData struct {
-//     PlayerID uint32    `json:"player_id"`
-//     GyroX    float32   `json:"gyro_x"`
-//     GyroY    float32   `json:"gyro_y"`
-//     GyroZ    float32   `json:"gyro_z"`
-//     // framöver: AccelX, AccelY, AccelZ, JoystickX, JoystickY…
-//     MacList  []string  `json:"mac_adresses"`
-//     Color    string    `json:"color"`
-// }
-
 // SensorData representerar ett uppdaterat paket med alla sensordata och metadata.
 type SensorData struct {
     GyroX        float32   `json:"gyro_x"`                    // Gyroskop X
