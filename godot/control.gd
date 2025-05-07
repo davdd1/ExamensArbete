@@ -4,7 +4,7 @@ var selected_game_index = -1
 
 var blob_node
 var blob_velocity := Vector2.ZERO
-var blob_speed = 15
+var blob_speed = 200
 var smooth_velocity := Vector2.ZERO
 
 var blobs := {} # mac -> blob node
@@ -48,8 +48,8 @@ func update_blob(data):
 
 	var macs = json.get("mac_adresses", [])
 	var color = Color(json.get("color", "white"))
-	var gyro_x = json.get("gyro_x", 0.0)
-	var gyro_y = json.get("gyro_y", 0.0)
+	var gyro_x = json.get("joystick_x", 0.0)
+	var gyro_y = -json.get("joystick_y", 0.0)
 	
 	var velocity = Vector2(gyro_x, gyro_y)
 	

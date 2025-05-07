@@ -21,6 +21,7 @@ func register_player_list(node):
 var socket: WebSocketPeer = WebSocketPeer.new()
 
 # Variabel för att lagra senaste mottagna gyro_y
+var sensor_joystick_y: float = 0.0
 var sensor_gyro_y: float = 0.0
 var color = "blue"
 
@@ -55,6 +56,7 @@ func _process(delta: float) -> void:
 					if current_scene_ref and current_scene_ref.has_method("update_blob"):
 						current_scene_ref.update_blob(data)
 					sensor_gyro_y = float(data.get("gyro_y", 0))
+					sensor_joystick_y = float(data.get("joystick_y", 0))
 					# print("Mottaget sensor data: ", data)
 					if data.has("color"):
 						color = data["color"]

@@ -2,7 +2,7 @@ extends Node2D
 
 var velocity := Vector2.ZERO
 var smooth_velocity := Vector2.ZERO
-@export var speed := 15
+@export var speed := 500
 @export var radius := 20
 var color := Color.RED
 var mac := "text"
@@ -23,8 +23,8 @@ func _process(delta):
 		position += smooth_velocity * delta * speed
 
 	var screen_size = get_viewport_rect().size
-	position.x = clamp(position.x, radius, screen_size.x - radius)
-	position.y = clamp(position.y, radius, screen_size.y - radius)
+	#position.x = clamp(position.x, radius, screen_size.x - radius)
+	#position.y = clamp(position.y, radius, screen_size.y - radius)
 
 	# Flytta texten ovanför blobben
 	#$macname.position = Vector2(0, -radius - 10)

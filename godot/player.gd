@@ -2,7 +2,7 @@ extends StaticBody2D
 
 var win_height : int 
 var p_height : int
-const PLAYER_SPEED: float = 4
+const PLAYER_SPEED: float = 500
 
 var velocity: float = 0.0
 
@@ -14,12 +14,12 @@ func _ready() -> void:
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
-	# Hämta noden som tar emot sensor-data (justera sökvägen efter din scenstruktur)
+	# Hämta noden som tar emot sensor-data
 	var ws_node = get_node("/root/Main/WebSocketNode")
 	
 	# Beräkna den önskade hastigheten baserat på sensor-värdet (gyro_y)
 	# Justera gärna PEDDLE_SPEED eller multipliceringsfaktorn efter behov.
-	var target_speed = ws_node.sensor_gyro_y * PLAYER_SPEED
+	var target_speed = -ws_node.sensor_joystick_y * PLAYER_SPEED
 	
 	# Använd linjär interpolation (lerp) för att gradvis ändra 'velocity' mot 'target_speed'.
 	# Det tredje argumentet (0.1) bestämmer hur snabbt vi närmar oss målet:
