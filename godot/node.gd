@@ -43,7 +43,7 @@ func _process(delta: float) -> void:
 		# Medan det finns meddelanden i kön, hämta dem.
 		while socket.get_available_packet_count() > 0:
 			var received: String = socket.get_packet().get_string_from_utf8()
-			print(received)
+			#print(received)
 			# Använd JSON-klassen för att parsa den mottagna strängen.
 			var json := JSON.new()
 			var parse_error = json.parse(received)
