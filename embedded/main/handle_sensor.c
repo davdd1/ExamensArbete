@@ -197,12 +197,13 @@ void handle_sensor_task(void* params)
         #endif
 
         #ifdef CONFIG_IDF_TARGET_ESP32C6
-        raw_x = adc1_get_raw(VRX_CH);
-        
-        raw_y = adc1_get_raw(VRY_CH);
-        //ESP_LOGI("JOY_RAW", "raw_x=%d, raw_y=%d", raw_x, raw_y);
-        float joy_x = -normalize(raw_x, joy_center_x);
-        float joy_y = -normalize(raw_y, joy_center_y);
+            raw_x = adc1_get_raw(VRX_CH);
+            
+            raw_y = adc1_get_raw(VRY_CH);
+            //ESP_LOGI("JOY_RAW", "raw_x=%d, raw_y=%d", raw_x, raw_y);
+            float joy_x = -normalize(raw_x, joy_center_x);
+            float joy_y = -normalize(raw_y, joy_center_y);
+            
         #endif
 
         // MED RÄTT ORIENTERING PÅ JOYSTICKEN (KABLARNA UPPÅT), X-AXEL + är höger, Y-AXEL + är uppåt
@@ -213,7 +214,7 @@ void handle_sensor_task(void* params)
         // 📋 DEBUG output
         // ESP_LOGI("MPU6050", "Accel[g]  ax: %.2f, ay: %.2f, az: %.2f", ax, ay, az);
         // ESP_LOGI("MPU6050", "Gyro[°/s] gx: %.2f, gy: %.2f, gz: %.2f", gx, gy, gz);
-        ESP_LOGI("JOY", "Joystick: x: %.2f, y: %.2f, pressed: %d", joy_x, joy_y, pressed);
+        //ESP_LOGI("JOY", "Joystick: x: %.2f, y: %.2f, pressed: %d", joy_x, joy_y, pressed);
 
         packet_t sensor_data = {
             .type = TYPE_SENSOR_DATA,
@@ -229,7 +230,6 @@ void handle_sensor_task(void* params)
                 .joy_is_pressed = pressed }
         };
 
-        // vänta tills kön är tom innan vi skickar nästa data
         // Vi väntar kort tid för att skulle den vara full vill vi hämta NY data och inte sitta på gammal data
         xQueueSend(task_params->sensor_data_queue, &sensor_data, pdMS_TO_TICKS(50));
     }

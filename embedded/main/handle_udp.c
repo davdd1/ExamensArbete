@@ -108,22 +108,21 @@ void run_udp_task(void* params)
             break;
         }    }
 
-    // Pre-create our sensor packet with MAC address already set (won't change)
+
+    //premade sensorpacket with mac address
     packet_t sensor_packet;
-    sensor_packet.type = TYPE_SENSOR_DATA;  // Set the packet type to sensor data
     memcpy(sensor_packet.mac_addr, connection_packet.mac_addr, sizeof(connection_packet.mac_addr));
 
     while (1) {
         // Receive only the sensor data portion into our pre-configured packet
-        xQueueReceive(task_params->sensor_data_queue, &sensor_packet.sensor, sizeof(sensor_packet.sensor));
-
+        xQueueReceive(task_params->sensor_data_queue, &sensor_packet, sizeof(sensor_packet));
         // Mock data
         //  global_sensor_packet.player_id = 2;
         //  global_sensor_packet.gyro_x = 4.23;
         //  global_sensor_packet.gyro_y = 5.23;
         //  global_sensor_packet.gyro_z = 6.23;
-        //  printf("Sending sensor data: gyro_x=%.2f, gyro_y=%.2f, gyro_z=%.2f, playerID=%ld\n", global_sensor_packet.gyro_x,
-        //         global_sensor_packet.gyro_y, global_sensor_packet.gyro_z, global_sensor_packet.player_id);
+        // printf("Sending sensor data: Joystick_x=%.2f, Joystick_y=%.2f\n", sensor_packet.sensor.joy_x,
+        //      sensor_packet.sensor.joy_y);
 
         int err = sendto(sock, &sensor_packet, sizeof(sensor_packet), 0,
             (struct sockaddr*)&dest_addr, sizeof(dest_addr));
@@ -132,7 +131,7 @@ void run_udp_task(void* params)
             break;
         }
 
-
+        vTaskDelay(pdMS_TO_TICKS(10)); // Wait for 50ms before sending the next packet
         // No delay needed since we're already waiting on the queue
         // Sending again as soon as new sensor data is available
     }
