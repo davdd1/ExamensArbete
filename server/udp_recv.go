@@ -1,13 +1,30 @@
 package main
 
 import (
-	"log"
-	"net"
-	"fmt"
+	//"bytes"
 	"encoding/binary"
-	"bytes"
+	"fmt"
+	"log"
+	"math"
+	"net"
 )
 
+func decodePacket(buf []byte) Packet {
+	// buf must be at least packetSize bytes
+	return Packet{
+		Type: buf[0],
+		// skip buf [1-3], padding
+		GyroX: math.Float32frombits(binary.LittleEndian.Uint32(buf[4:])),
+		GyroY: math.Float32frombits(binary.LittleEndian.Uint32(buf[8:])),
+		GyroZ: math.Float32frombits(binary.LittleEndian.Uint32(buf[12:])),
+		AccelX: math.Float32frombits(binary.LittleEndian.Uint32(buf[16:])),
+		AccelY: math.Float32frombits(binary.LittleEndian.Uint32(buf[20:])),
+		AccelZ: math.Float32frombits(binary.LittleEndian.Uint32(buf[24:])),
+		JoystickX: math.Float32frombits(binary.LittleEndian.Uint32(buf[28:])),
+		JoystickY: math.Float32frombits(binary.LittleEndian.Uint32(buf[32:])),
+		ButtonState: buf[36],
+	}
+}
 
 func UdpReceiver() {
 	udpAddr, err := net.ResolveUDPAddr("udp", ":1234")
@@ -43,19 +60,21 @@ func UdpReceiver() {
 			handle_ACK_request(conn, addr, buf)
 		case 1:
 			//hantera sensor data
-			var pkt Packet // SKAPA packet srtruct 
+			//var pkt Packet // SKAPA packet srtruct 
 			//läser in i paketet från buffern
 
-			if err := binary.Read(bytes.NewReader(buf[:packetSize]), binary.LittleEndian, &pkt); err != nil {
-				log.Println("Binary read failed:", err)
-				continue
-			}
-			//hanterar sensor datan
+			// if err := binary.Read(bytes.NewReader(buf[:packetSize]), binary.LittleEndian, &pkt); err != nil {
+			// 	log.Println("Binary read failed:", err)
+			// 	continue
+			// }
+
+			// Snabbare att använda decodePacket istället för binary.Read
+			pkt := decodePacket(buf)
 			handleSensor(pkt, addr)
-			
 		}
 	}
 }
+
 
 func handle_ACK_request(conn *net.UDPConn, addr *net.UDPAddr, buf []byte) {
 	// TODO FIXA SÅ VI KOLLAR MACADDRES PÅ RÄTT STÄLLE
