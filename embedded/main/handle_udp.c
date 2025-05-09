@@ -111,11 +111,15 @@ void run_udp_task(void* params)
 
     //premade sensorpacket with mac address
     packet_t sensor_packet;
+    //memcpy(sensor_packet.mac_addr, connection_packet.mac_addr, sizeof(connection_packet.mac_addr));
     memcpy(sensor_packet.mac_addr, connection_packet.mac_addr, sizeof(connection_packet.mac_addr));
 
     while (1) {
+        // Clear the sensor_packet buffer before receiving new data
+        memset(&sensor_packet.sensor, 0, sizeof(sensor_packet.sensor));
         // Receive only the sensor data portion into our pre-configured packet
         xQueueReceive(task_params->sensor_data_queue, &sensor_packet, sizeof(sensor_packet));
+
         // Mock data
         //  global_sensor_packet.player_id = 2;
         //  global_sensor_packet.gyro_x = 4.23;
@@ -130,8 +134,8 @@ void run_udp_task(void* params)
             ESP_LOGE("UDP", "Error occurred during sending: errno %d", errno);
             break;
         }
-
-        vTaskDelay(pdMS_TO_TICKS(10)); // Wait for 50ms before sending the next packet
+        
+        //vTaskDelay(pdMS_TO_TICKS(10)); // Wait for 50ms before sending the next packet
         // No delay needed since we're already waiting on the queue
         // Sending again as soon as new sensor data is available
     }
