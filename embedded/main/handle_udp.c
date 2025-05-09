@@ -33,7 +33,8 @@
 #define UDP_PORT CONFIG_SERVER_PORT
 #define UDP_SERVER_IP CONFIG_SERVER_IP
 
-void run_udp_task(void* params) {
+void run_udp_task(void* params)
+{
     ESP_LOGI("UDP", "Starting UDP task...");
     task_params_t* task_params = (task_params_t*)params;
 
@@ -69,10 +70,10 @@ void run_udp_task(void* params) {
     connection_packet.type = TYPE_CONNECTION_REQUEST;
     ESP_ERROR_CHECK(esp_read_mac(connection_packet.mac_addr, ESP_MAC_WIFI_STA));
     ESP_LOGI("UDP", "MAC Address: %02x:%02x:%02x:%02x:%02x:%02x\n", connection_packet.mac_addr[0],
-             connection_packet.mac_addr[1], connection_packet.mac_addr[2], connection_packet.mac_addr[3],
-             connection_packet.mac_addr[4], connection_packet.mac_addr[5]);
+        connection_packet.mac_addr[1], connection_packet.mac_addr[2], connection_packet.mac_addr[3],
+        connection_packet.mac_addr[4], connection_packet.mac_addr[5]);
     int err = sendto(sock, &connection_packet, sizeof(connection_packet), 0, (struct sockaddr*)&dest_addr,
-                     sizeof(dest_addr));
+        sizeof(dest_addr));
     if (err < 0) {
         ESP_LOGE("UDP", "Error occurred during sending: errno %d", errno);
         vTaskDelete(NULL);
@@ -92,42 +93,48 @@ void run_udp_task(void* params) {
         switch (rx_buffer[1]) {
         case 0:
             printf("color is RED\n");
-            //set_led_red();
+            // set_led_red();
             break;
         case 1:
             printf("color is GREEN\n");
-            //set_led_green();
+            // set_led_green();
             break;
         case 2:
             printf("color is BLUE\n");
-            //set_led_blue();
+            // set_led_blue();
             break;
         default:
             printf("color is UNKNOWN\n");
             break;
-        }
-    }
+        }    }
+
+    // Pre-create our sensor packet with MAC address already set (won't change)
+    packet_t sensor_packet;
+    sensor_packet.type = TYPE_SENSOR_DATA;  // Set the packet type to sensor data
+    memcpy(sensor_packet.mac_addr, connection_packet.mac_addr, sizeof(connection_packet.mac_addr));
 
     while (1) {
-        packet_t global_sensor_packet;
-        xQueueReceive(task_params->sensor_data_queue, &global_sensor_packet, portMAX_DELAY);
-        memcpy(global_sensor_packet.mac_addr, connection_packet.mac_addr, sizeof(connection_packet.mac_addr)); // Set MAC address in the packet
-        //TODO: REMOVE IF NOT TESTING WITHOUT SENSOR DATA
-        // global_sensor_packet.player_id = 2;
-        // global_sensor_packet.gyro_x = 4.23;
-        // global_sensor_packet.gyro_y = 5.23;
-        // global_sensor_packet.gyro_z = 6.23;
-        // printf("Sending sensor data: gyro_x=%.2f, gyro_y=%.2f, gyro_z=%.2f, playerID=%ld\n", global_sensor_packet.gyro_x,
-        //        global_sensor_packet.gyro_y, global_sensor_packet.gyro_z, global_sensor_packet.player_id);
+        // Receive only the sensor data portion into our pre-configured packet
+        xQueueReceive(task_params->sensor_data_queue, &sensor_packet.sensor, sizeof(sensor_packet.sensor));
 
-        int err = sendto(sock, &global_sensor_packet, sizeof(global_sensor_packet), 0,
-                         (struct sockaddr*)&dest_addr, sizeof(dest_addr));
+        // Mock data
+        //  global_sensor_packet.player_id = 2;
+        //  global_sensor_packet.gyro_x = 4.23;
+        //  global_sensor_packet.gyro_y = 5.23;
+        //  global_sensor_packet.gyro_z = 6.23;
+        //  printf("Sending sensor data: gyro_x=%.2f, gyro_y=%.2f, gyro_z=%.2f, playerID=%ld\n", global_sensor_packet.gyro_x,
+        //         global_sensor_packet.gyro_y, global_sensor_packet.gyro_z, global_sensor_packet.player_id);
+
+        int err = sendto(sock, &sensor_packet, sizeof(sensor_packet), 0,
+            (struct sockaddr*)&dest_addr, sizeof(dest_addr));
         if (err < 0) {
             ESP_LOGE("UDP", "Error occurred during sending: errno %d", errno);
             break;
         }
 
-        vTaskDelay(pdMS_TO_TICKS(100));
+
+        // No delay needed since we're already waiting on the queue
+        // Sending again as soon as new sensor data is available
     }
 
     if (sock != -1) {
