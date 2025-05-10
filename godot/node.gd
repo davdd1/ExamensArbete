@@ -62,11 +62,11 @@ func _process(delta: float) -> void:
 						color = data["color"]
 						#print(color)
 					# Kolla om vi fått en lista över MAC-adresser:
-					if data.has("mac_adresses"):
+					if data.has("mac_address"):
 						# print("has mac")
-						var mac_list = data["mac_adresses"]
-						if typeof(mac_list) == TYPE_ARRAY:
-							update_mac_list_ui(mac_list, color)
+						var mac_addr = data["mac_address"]
+						if typeof(mac_addr) == TYPE_STRING:
+							update_mac_list_ui(mac_addr, color)
 				else:
 					print("Ogiltigt dataformat (ej dictionary): ", received)
 			else:
@@ -80,30 +80,53 @@ func _process(delta: float) -> void:
 		print("WebSocket stängd med kod: %d. Clean: %s" % [code, code != -1])
 		set_process(false)
 
+func is_valid_mac_address(mac: String) -> bool:
+	# Must be 17 chars long (XX:XX:XX:XX:XX:XX)
+	if mac.length() != 17:
+		return false
+		
+	# Check format with colons
+	var regex = RegEx.new()
+	regex.compile("^([0-9A-F]{2}:){5}[0-9A-F]{2}$")
+	if !regex.search(mac):
+		return false
+		
+	# Not all zeros
+	if mac == "00:00:00:00:00:00":
+		return false
+		
+	# Not broadcast
+	if mac == "FF:FF:FF:FF:FF:FF":
+		return false
+		
+	return true
+
 #lägger till nya macaddresser i listan
-func update_mac_list_ui(mac_addresses: Array, color: String) -> void:
+func update_mac_list_ui(mac_address: String, device_color: String) -> void:
+	#FINNS LISTAN AV SPELARE
 	if player_list_node:
-		#player_list_node.clear()
-		
-		for mac in mac_addresses:
-			var exists = false
-			var item_count = player_list_node.get_item_count()
+		# Validate the MAC address - reject invalid formats and all-zeros
+		if !is_valid_mac_address(mac_address):
+			print("⚠️ Ignoring invalid MAC address:", mac_address)
+			return
 			
-			#kolla om mac address finns
-			for i in range(item_count):
-				if player_list_node.get_item_text(i) == mac:
-					exists = true
-					#print("mac finns redan")
-					break
-			if not exists:
-				if color == "red":
-					player_list_node.add_item(mac, red_icon, true)
-					#print("added mac to list with red")	
-				elif color == "blue":
-					player_list_node.add_item(mac, blue_icon, true)
-					#print("added mac to list with BLUE")	
-				else:
-					player_list_node.add_item(mac, green_icon, true)
-					print("added mac to list with GREEN")	
-		
+		var item_count = player_list_node.get_item_count() #Hur många spelare finns i listan redan
+			
+		#kolla om mac address finns
+		for i in range(item_count):
+			if player_list_node.get_item_text(i) == mac_address:
+				return
+				
+		#IFALL DEN INTE FINNS
+		#KOLLA VILKEN FÄRG DEN HAR OCH LÄGG TILL I LISTAN MED FÄRG
+		if device_color == "red":
+			player_list_node.add_item(mac_address, red_icon, true)
+			print("✅ Added player with MAC: " + mac_address + " (red)")
+		elif device_color == "blue":
+			player_list_node.add_item(mac_address, blue_icon, true)
+			print("✅ Added player with MAC: " + mac_address + " (blue)")
+		else:
+			player_list_node.add_item(mac_address, green_icon, true)
+			print("✅ Added player with MAC: " + mac_address + " (green)")
+			
 	pass
