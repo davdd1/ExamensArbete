@@ -1,7 +1,6 @@
 package main
 
 import (
-	//"bytes"
 	"encoding/binary"
 	"fmt"
 	"log"
@@ -12,17 +11,19 @@ import (
 func decodePacket(buf []byte) Packet {
 	// buf must be at least packetSize bytes
 	return Packet{
-		Type: buf[0],
-		// skip buf [1-3], padding
-		GyroX: math.Float32frombits(binary.LittleEndian.Uint32(buf[4:])),
-		GyroY: math.Float32frombits(binary.LittleEndian.Uint32(buf[8:])),
-		GyroZ: math.Float32frombits(binary.LittleEndian.Uint32(buf[12:])),
-		AccelX: math.Float32frombits(binary.LittleEndian.Uint32(buf[16:])),
-		AccelY: math.Float32frombits(binary.LittleEndian.Uint32(buf[20:])),
-		AccelZ: math.Float32frombits(binary.LittleEndian.Uint32(buf[24:])),
-		JoystickX: math.Float32frombits(binary.LittleEndian.Uint32(buf[28:])),
-		JoystickY: math.Float32frombits(binary.LittleEndian.Uint32(buf[32:])),
-		ButtonState: buf[36],
+		Type:    int32(binary.LittleEndian.Uint32(buf[0:])),
+		MacAddr: [6]byte{buf[4], buf[5], buf[6], buf[7], buf[8], buf[9]},
+		// skip buf [10-11], padding
+		GyroX:       math.Float32frombits(binary.LittleEndian.Uint32(buf[12:])),
+		GyroY:       math.Float32frombits(binary.LittleEndian.Uint32(buf[16:])),
+		GyroZ:       math.Float32frombits(binary.LittleEndian.Uint32(buf[20:])),
+		AccelX:      math.Float32frombits(binary.LittleEndian.Uint32(buf[24:])),
+		AccelY:      math.Float32frombits(binary.LittleEndian.Uint32(buf[28:])),
+		AccelZ:      math.Float32frombits(binary.LittleEndian.Uint32(buf[32:])),
+		JoystickX:   math.Float32frombits(binary.LittleEndian.Uint32(buf[36:])),
+		JoystickY:   math.Float32frombits(binary.LittleEndian.Uint32(buf[40:])),
+		ButtonState: buf[44],
+		// skip buf [45-47], padding
 	}
 }
 
@@ -60,21 +61,11 @@ func UdpReceiver() {
 			handle_ACK_request(conn, addr, buf)
 		case 1:
 			//hantera sensor data
-			//var pkt Packet // SKAPA packet srtruct 
-			//läser in i paketet från buffern
-
-			// if err := binary.Read(bytes.NewReader(buf[:packetSize]), binary.LittleEndian, &pkt); err != nil {
-			// 	log.Println("Binary read failed:", err)
-			// 	continue
-			// }
-
-			// Snabbare att använda decodePacket istället för binary.Read
 			pkt := decodePacket(buf)
 			handleSensor(pkt, addr)
 		}
 	}
 }
-
 
 func handle_ACK_request(conn *net.UDPConn, addr *net.UDPAddr, buf []byte) {
 	// TODO FIXA SÅ VI KOLLAR MACADDRES PÅ RÄTT STÄLLE
@@ -112,34 +103,33 @@ func handle_ACK_request(conn *net.UDPConn, addr *net.UDPAddr, buf []byte) {
 	}
 }
 
-
 func handleSensor(pkt Packet, addr *net.UDPAddr) {
-    // Hämta MAC-sträng för den här UDP-adressen
-    macStr := macMapping[addr.String()]
-    if macStr == "" {
-        log.Println("Ingen MAC-mappning för", addr)
-        return
-    }
+	// Hämta MAC-sträng för den här UDP-adressen
+	macStr := macMapping[addr.String()]
+	if macStr == "" {
+		log.Println("Ingen MAC-mappning för", addr)
+		return
+	}
 
-    // Hämta färgen för den här MAC:en
-    color := macColorMap[macStr]
+	// Hämta färgen för den här MAC:en
+	color := macColorMap[macStr]
 
-    // Bygg upp SensorData med alla fält
-    data := SensorData{
-        GyroX:       pkt.GyroX,
-        GyroY:       pkt.GyroY,
-        GyroZ:       pkt.GyroZ,
-        AccelX:      pkt.AccelX,
-        AccelY:      pkt.AccelY,
-        AccelZ:      pkt.AccelZ,
-        JoystickX:   pkt.JoystickX,
-        JoystickY:   pkt.JoystickY,
-        ButtonState: pkt.ButtonState != 0,      // konvertera uint8 → bool
-        MacList:     []string{macStr},
-        Color:       color,
-        // BatteryLevel lämnas utelämnad tills vi börjar skicka den
-    }
+	// Bygg upp SensorData med alla fält
+	data := SensorData{
+		GyroX:       pkt.GyroX,
+		GyroY:       pkt.GyroY,
+		GyroZ:       pkt.GyroZ,
+		AccelX:      pkt.AccelX,
+		AccelY:      pkt.AccelY,
+		AccelZ:      pkt.AccelZ,
+		JoystickX:   pkt.JoystickX,
+		JoystickY:   pkt.JoystickY,
+		ButtonState: pkt.ButtonState != 0, // konvertera uint8 → bool
+		MacList:     []string{macStr},
+		Color:       color,
+		// BatteryLevel lämnas utelämnad tills vi börjar skicka den
+	}
 
-    // Skicka vidare som JSON till alla WebSocket-klienter
-    BroadcastSensorData(data)
+	// Skicka vidare som JSON till alla WebSocket-klienter
+	BroadcastSensorData(data)
 }

@@ -7,8 +7,9 @@ import (
 
 //Det packet vi tar emot från ESPn
 type Packet struct {
-	Type uint8
-	_ [3]byte // padding - need exaplain why this is needed
+	Type int32
+	MacAddr [6]byte
+	_ [2]byte // padding, for 4-byte alignment
 	GyroX float32
 	GyroY float32
 	GyroZ float32
@@ -18,11 +19,12 @@ type Packet struct {
 	JoystickX float32
 	JoystickY float32
 	ButtonState uint8
-	//Längre fram AccelX, AccelY, AccelZ, JoystickX, JoystickY, ButtonState, Batterylevel?
+	_ [3]byte // padding
+	//Längre fram Batterylevel?
 }
 
-const packetSize = 1 /*Type*/ + 3 /*pad*/ + 8*4 /*8 floats*/ + 1 /*ButtonState*/ + 3 /*trailing pad*/
-// -> 40
+const packetSize = 4 /*Type*/ + 6 /*MacAddr*/ + 2 /*padding*/ + 8*4 /*8 floats*/ + 1 /*ButtonState*/ + 3 /*trailing padding*/
+// -> 48 bytes
 
 // SensorData representerar ett uppdaterat paket med alla sensordata och metadata.
 type SensorData struct {
