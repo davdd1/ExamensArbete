@@ -67,52 +67,220 @@ func UdpReceiver() {
 	}
 }
 
-func handle_ACK_request(conn *net.UDPConn, addr *net.UDPAddr, buf []byte) {
-	// TODO FIXA SÅ VI KOLLAR MACADDRES PÅ RÄTT STÄLLE
-	macAddr := buf[4:10] // MAC-adressen är i bytes 4-9
-	macStr := fmt.Sprintf("%02X:%02X:%02X:%02X:%02X:%02X",
-		macAddr[0], macAddr[1], macAddr[2], macAddr[3], macAddr[4], macAddr[5])
+func isValidMACAddress(mac string) bool {
+	// Basic format check: XX:XX:XX:XX:XX:XX where X is hex digit
+	if len(mac) != 17 {
+		return false
+	}
 
-	macMapping[addr.String()] = macStr
-	fmt.Println("Device mapped:", addr.String(), "->", macStr)
-
-	// Tilldela unik färgindex
-	var assignedIndex int
-	if _, exists := macColorMap[macStr]; !exists {
-		assignedIndex = colorIndex % len(colorList)
-		macColorMap[macStr] = colorList[assignedIndex]
-		colorIndex++
-	} else {
-		// Hitta index på redan tilldelad färg
-		color := macColorMap[macStr]
-		for i, c := range colorList {
-			if c == color {
-				assignedIndex = i
-				break
+	// Check format with colons
+	for i, c := range mac {
+		if i%3 == 2 {
+			if c != ':' && i < 15 {
+				return false
+			}
+		} else {
+			if !((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')) {
+				return false
 			}
 		}
 	}
 
-	// Skicka: byte 0 = ACK, byte 1 = färgindex 0 red, 1 green, 2 blue
+	// Check it's not all zeroes
+	if mac == "00:00:00:00:00:00" {
+		return false
+	}
+
+	return true
+}
+
+func handle_ACK_request(conn *net.UDPConn, addr *net.UDPAddr, buf []byte) {
+	// Validate packet format and extract MAC address
+	if len(buf) < 10 {
+		log.Println("Invalid connection request packet: too short")
+		return
+	}
+
+	// MAC-adressen är i bytes 4-9
+	macAddr := buf[4:10]
+	macStr := fmt.Sprintf("%02X:%02X:%02X:%02X:%02X:%02X",
+		macAddr[0], macAddr[1], macAddr[2], macAddr[3], macAddr[4], macAddr[5])
+
+	// Validate MAC address format (simple check)
+	if !isValidMACAddress(macStr) {
+		log.Printf("Rejected invalid MAC address: %s from %s", macStr, addr.String())
+		return
+	}
+
+	// Check for all zeros MAC address which is invalid
+	allZeros := true
+	for _, b := range macAddr {
+		if b != 0 {
+			allZeros = false
+			break
+		}
+	}
+
+	if allZeros {
+		log.Printf("Rejected all-zeros MAC address from %s", addr.String())
+		return
+	}
+
+	// Lock access to device data structures
+	deviceMapMu.Lock()
+	defer deviceMapMu.Unlock()
+	// Check if this UDP address is already mapped to a different MAC
+	addrStr := addr.String()
+	existingMAC, hasMapping := udpToMACMap[addrStr]
+	if hasMapping && existingMAC != macStr {
+		log.Printf("Warning: UDP address %s changing MAC from %s to %s",
+			addrStr, existingMAC, macStr)
+
+		// Remove the old UDP-to-MAC mapping
+		if oldDevice, exists := deviceMap[existingMAC]; exists {
+			delete(oldDevice.UDPAddresses, addrStr)
+			log.Printf("Removed mapping from %s to %s", addrStr, existingMAC)
+		}
+
+		// If we're getting multiple MACs from the same UDP address,
+		// something unusual is happening - log it
+		log.Printf("⚠️ Multiple MACs from same UDP address: %s → %s, now %s",
+			addrStr, existingMAC, macStr)
+	}
+
+	// Get or create device entry
+	device, exists := deviceMap[macStr]
+	if !exists {
+		// Create new device entry
+		device = &Device{
+			MacAddress:   macStr,
+			Color:        colorList[colorIndex%len(colorList)],
+			LastSeen:     currentTimestamp(),
+			UDPAddresses: make(map[string]bool),
+		}
+		deviceMap[macStr] = device
+		colorIndex++
+		log.Printf("New device registered: %s with color %s", macStr, device.Color)
+	} else {
+		// Update existing device
+		device.LastSeen = currentTimestamp()
+		log.Printf("Known device reconnected: %s with color %s", macStr, device.Color)
+	}
+
+	// Update address mappings
+	device.UDPAddresses[addrStr] = true
+
+	// Update bidirectional maps
+	udpToMACMap[addrStr] = macStr
+	macToUDPMap[macStr] = addrStr
+
+	// Find color index for response
+	var assignedIndex int
+	for i, c := range colorList {
+		if c == device.Color {
+			assignedIndex = i
+			break
+		}
+	}
+
+	// Send ACK with color index
 	ack := []byte{1, byte(assignedIndex)}
 	_, err := conn.WriteToUDP(ack, addr)
 	if err != nil {
 		log.Println("Failed to send connection acknowledgment with index:", err)
 	} else {
-		log.Printf("ACK sent to %s with color index %d (%s)\n", addr.String(), assignedIndex, colorList[assignedIndex])
+		log.Printf("ACK sent to %s with color index %d (%s)\n", addrStr, assignedIndex, device.Color)
 	}
+
+	fmt.Println("Device mapped:", addrStr, "->", macStr)
 }
 
 func handleSensor(pkt Packet, addr *net.UDPAddr) {
+	addrStr := addr.String()
+
+	// Get the device lock for safe access
+	deviceMapMu.Lock()
+	defer deviceMapMu.Unlock()
+
 	// Hämta MAC-sträng för den här UDP-adressen
-	macStr := macMapping[addr.String()]
+	macStr := udpToMACMap[addrStr]
 	if macStr == "" {
-		log.Println("Ingen MAC-mappning för", addr)
+		// Try to get MAC address from the packet itself
+		macFromPkt := fmt.Sprintf("%02X:%02X:%02X:%02X:%02X:%02X",
+			pkt.MacAddr[0], pkt.MacAddr[1], pkt.MacAddr[2],
+			pkt.MacAddr[3], pkt.MacAddr[4], pkt.MacAddr[5])
+
+		// Check for all zeros MAC (invalid)
+		allZeros := true
+		for _, b := range pkt.MacAddr {
+			if b != 0 {
+				allZeros = false
+				break
+			}
+		}
+
+		if allZeros {
+			log.Printf("Rejected sensor data with all-zeros MAC from %s", addrStr)
+			return
+		}
+
+		// Additional validation for reasonable MAC values
+		// Prevent obviously invalid MACs (like FF:FF:FF:FF:FF:FF broadcast)
+		if macFromPkt == "FF:FF:FF:FF:FF:FF" {
+			log.Printf("Rejected sensor data with broadcast MAC from %s", addrStr)
+			return
+		}
+		if isValidMACAddress(macFromPkt) {
+			log.Printf("Auto-registering device from data packet: %s", macFromPkt)
+
+			// Check if this MAC is already registered with a different UDP
+			existingAddr, hasMACMapping := macToUDPMap[macFromPkt]
+			if hasMACMapping && existingAddr != addrStr {
+				log.Printf("⚠️ MAC %s previously seen at %s, now at %s",
+					macFromPkt, existingAddr, addrStr)
+
+				// Handle MAC address spoofing - decide whether to allow or block
+				// For now, log but allow the connection
+				log.Printf("⚠️ Possible MAC address spoofing detected! %s", macFromPkt)
+			}
+
+			// This is a valid MAC but we don't have a mapping yet
+			// Let's create a device entry on the fly
+			device, exists := deviceMap[macFromPkt]
+			if !exists {
+				device = &Device{
+					MacAddress:   macFromPkt,
+					Color:        colorList[colorIndex%len(colorList)],
+					LastSeen:     currentTimestamp(),
+					UDPAddresses: make(map[string]bool),
+				}
+				deviceMap[macFromPkt] = device
+				colorIndex++
+				log.Printf("New device auto-registered: %s with color %s", macFromPkt, device.Color)
+			}
+
+			// Update mappings
+			device.UDPAddresses[addrStr] = true
+			udpToMACMap[addrStr] = macFromPkt
+			macToUDPMap[macFromPkt] = addrStr
+
+			// Now we have a valid MAC
+			macStr = macFromPkt
+		} else {
+			log.Printf("Invalid MAC address format in sensor data: %s from %s", macFromPkt, addrStr)
+			return
+		}
+	}
+
+	// Get device and update last seen timestamp
+	device, exists := deviceMap[macStr]
+	if !exists {
+		log.Printf("Inconsistent state: MAC in mapping but not in deviceMap: %s", macStr)
 		return
 	}
 
-	// Hämta färgen för den här MAC:en
-	color := macColorMap[macStr]
+	// Update last seen timestamp
+	device.LastSeen = currentTimestamp()
 
 	// Bygg upp SensorData med alla fält
 	data := SensorData{
@@ -125,8 +293,8 @@ func handleSensor(pkt Packet, addr *net.UDPAddr) {
 		JoystickX:   pkt.JoystickX,
 		JoystickY:   pkt.JoystickY,
 		ButtonState: pkt.ButtonState != 0, // konvertera uint8 → bool
-		MacList:     []string{macStr},
-		Color:       color,
+		MacAddr:     macStr,
+		Color:       device.Color,
 		// BatteryLevel lämnas utelämnad tills vi börjar skicka den
 	}
 

@@ -111,7 +111,7 @@ void run_udp_task(void* params)
 
     // premade sensorpacket with mac address
     packet_t sensor_packet;
-    memcpy(sensor_packet.mac_addr, connection_packet.mac_addr, sizeof(connection_packet.mac_addr));
+    //memcpy(sensor_packet.mac_addr, connection_packet.mac_addr, sizeof(connection_packet.mac_addr));
 
     while (1) {
         // ESP_LOGI("HEAP", "Free heap: %lu bytes", esp_get_free_heap_size());
@@ -120,7 +120,7 @@ void run_udp_task(void* params)
         // Clear the sensor_packet buffer before receiving new data
         memset(&sensor_packet.sensor, 0, sizeof(sensor_packet.sensor));
         xQueueReceive(task_params->sensor_data_queue, &sensor_packet, portMAX_DELAY);
-
+        memcpy(sensor_packet.mac_addr, connection_packet.mac_addr, sizeof(connection_packet.mac_addr));
         // Mock data
         //  global_sensor_packet.player_id = 2;
         //  global_sensor_packet.gyro_x = 4.23;
@@ -129,10 +129,27 @@ void run_udp_task(void* params)
         // printf("Sending sensor data: Joystick_x=%.2f, Joystick_y=%.2f\n", sensor_packet.sensor.joy_x,
         //       sensor_packet.sensor.joy_y);
 
-        int err = sendto(sock, &sensor_packet, sizeof(sensor_packet), 0, (struct sockaddr*)&dest_addr, sizeof(dest_addr));
+        int err = sendto(sock, &sensor_packet, sizeof(sensor_packet), 0,
+            (struct sockaddr*)&dest_addr, sizeof(dest_addr));
         if (err < 0) {
             ESP_LOGE("UDP", "Error occurred during sending: errno %d", errno);
-            break;
+            vTaskDelay(pdMS_TO_TICKS(100));
+            err = sendto(sock, &sensor_packet, sizeof(sensor_packet), 0,
+                (struct sockaddr*)&dest_addr, sizeof(dest_addr));
+            if (err < 0) {
+                ESP_LOGE("UDP", "Error occurred during sending: errno %d", errno);
+                vTaskDelay(pdMS_TO_TICKS(500));
+                err = sendto(sock, &sensor_packet, sizeof(sensor_packet), 0,
+                    (struct sockaddr*)&dest_addr, sizeof(dest_addr));
+                if (err < 0) {
+                    ESP_LOGE("UDP", "Error occurred during sending: errno %d", errno);
+                    break;
+                }else {
+                    ESP_LOGI("UDP", "Sensor data sent successfully");
+                }
+            }else {
+                ESP_LOGI("UDP", "Sensor data sent successfully");
+            }
         }
     }
 
