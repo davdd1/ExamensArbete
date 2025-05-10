@@ -115,10 +115,13 @@ void run_udp_task(void* params)
     memcpy(sensor_packet.mac_addr, connection_packet.mac_addr, sizeof(connection_packet.mac_addr));
 
     while (1) {
+        // ESP_LOGI("HEAP", "Free heap: %lu bytes", esp_get_free_heap_size());
+        // UBaseType_t high_water_mark = uxTaskGetStackHighWaterMark(NULL);
+
         // Clear the sensor_packet buffer before receiving new data
         memset(&sensor_packet.sensor, 0, sizeof(sensor_packet.sensor));
         // Receive only the sensor data portion into our pre-configured packet
-        xQueueReceive(task_params->sensor_data_queue, &sensor_packet, sizeof(sensor_packet));
+        xQueueReceive(task_params->sensor_data_queue, &sensor_packet, portMAX_DELAY);
 
         // Mock data
         //  global_sensor_packet.player_id = 2;
