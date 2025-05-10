@@ -67,7 +67,7 @@ void run_udp_task(void* params)
     ESP_LOGI("UDP", "Socket created, sending to %s:%s", host_ip, UDP_PORT);
 
     packet_t connection_packet;
-    //connection_packet.type = TYPE_CONNECTION_REQUEST;
+    connection_packet.type = TYPE_CONNECTION_REQUEST;
     ESP_ERROR_CHECK(esp_read_mac(connection_packet.mac_addr, ESP_MAC_WIFI_STA));
     ESP_LOGI("UDP", "MAC Address: %02x:%02x:%02x:%02x:%02x:%02x\n", connection_packet.mac_addr[0],
         connection_packet.mac_addr[1], connection_packet.mac_addr[2], connection_packet.mac_addr[3],
@@ -119,7 +119,7 @@ void run_udp_task(void* params)
 
         // Clear the sensor_packet buffer before receiving new data
         memset(&sensor_packet.sensor, 0, sizeof(sensor_packet.sensor));
-        xQueueReceive(task_params->sensor_data_queue, &sensor_packet.sensor, portMAX_DELAY);
+        xQueueReceive(task_params->sensor_data_queue, &sensor_packet, portMAX_DELAY);
 
         // Mock data
         //  global_sensor_packet.player_id = 2;
@@ -127,10 +127,9 @@ void run_udp_task(void* params)
         //  global_sensor_packet.gyro_y = 5.23;
         //  global_sensor_packet.gyro_z = 6.23;
         // printf("Sending sensor data: Joystick_x=%.2f, Joystick_y=%.2f\n", sensor_packet.sensor.joy_x,
-        //      sensor_packet.sensor.joy_y);
+        //       sensor_packet.sensor.joy_y);
 
-        int err = sendto(sock, &sensor_packet, sizeof(sensor_packet), 0,
-            (struct sockaddr*)&dest_addr, sizeof(dest_addr));
+        int err = sendto(sock, &sensor_packet, sizeof(sensor_packet), 0, (struct sockaddr*)&dest_addr, sizeof(dest_addr));
         if (err < 0) {
             ESP_LOGE("UDP", "Error occurred during sending: errno %d", errno);
             break;

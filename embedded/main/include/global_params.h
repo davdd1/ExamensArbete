@@ -25,7 +25,7 @@ typedef enum packet_type {
 
 // Unified packet structure
 typedef struct Packet {
-    //packet_type_e type; // First field is the packet type
+    packet_type_e type; // First field is the packet type
     uint8_t mac_addr[6];
     uint8_t _padding1[2]; // 2 bytes padding → 4-byte alignment
     struct { // Sensor data
