@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/gorilla/websocket"
-	"net/http"
 	"log"
+	"net/http"
+
+	"github.com/gorilla/websocket"
 )
 
 var upgrader = websocket.Upgrader{
@@ -38,8 +39,14 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Websocket-klient frånkopplad.")
 }
 
+func healthHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("OK"))
+}
+
 func StartWebSocketServer() {
 	http.HandleFunc("/ws", wsHandler)
+	http.HandleFunc("/health", healthHandler)
 	addr := ":8080"
 	log.Println("Websocket-server startad på", addr)
 	if err := http.ListenAndServe(addr, nil); err != nil {

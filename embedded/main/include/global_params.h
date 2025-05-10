@@ -26,24 +26,21 @@ typedef enum packet_type {
 // Unified packet structure
 typedef struct Packet {
     packet_type_e type; // First field is the packet type
-    union {
-        struct { // Connection request data
-            uint8_t mac_addr[6];
-        };
-        struct { // Sensor data
-            // Gyroskop
-            float gyro_x, gyro_y, gyro_z;
-
-            // Accelerometer
-            float accel_x, accel_y, accel_z;
-
-            // Joystick
-            float joy_x, joy_y;
-            uint8_t joy_is_pressed; // 0 = not pressed, 1 = pressed
-            uint8_t _padding[3]; // 3 bytes padding at the end → 4-byte alignment
-        } sensor;
-    };
-} packet_t; // Total 40 bytes
+    uint8_t mac_addr[6];
+    uint8_t _padding1[2]; // 2 bytes padding → 4-byte alignment
+    struct { // Sensor data
+        // Gyroskop
+        float gyro_x, gyro_y, gyro_z;
+        
+        // Accelerometer
+        float accel_x, accel_y, accel_z;
+        
+        // Joystick
+        float joy_x, joy_y;
+        uint8_t joy_is_pressed; // 0 = not pressed, 1 = pressed
+        uint8_t _padding2[3]; // 3 bytes padding at the end → 4-byte alignment
+    } sensor;
+} packet_t; // Total 48 bytes
 
 // Declare an external instance of the unified packet
 extern packet_t global_packet;
