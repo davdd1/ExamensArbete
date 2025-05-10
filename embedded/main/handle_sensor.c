@@ -217,7 +217,7 @@ void handle_sensor_task(void* params)
         //ESP_LOGI("JOY", "Joystick: x: %.2f, y: %.2f, pressed: %d", joy_x, joy_y, pressed);
 
         packet_t sensor_data = {
-            .type = TYPE_SENSOR_DATA,
+            //.type = TYPE_SENSOR_DATA,
             .sensor = {
                 .gyro_x = gx, .gyro_y = gy, .gyro_z = gz,
 
