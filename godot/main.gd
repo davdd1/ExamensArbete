@@ -31,6 +31,10 @@ func _ready() -> void:
 		
 	#Dölj CPUn om den inte används
 	cpu.visible = false
+	if cpu.has_node("CollisionShape2D"):
+		var shape = cpu.get_node("CollisionShape2D")
+		shape.disabled = not cpu.visible
+	
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
