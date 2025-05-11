@@ -11,7 +11,8 @@
 static const char* TAG = "wifi";
 static int reconnect_counter = 0;
 
-static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data) {
+static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
+{
     task_params_t* param = (task_params_t*)arg;
     switch (event_id) {
     case WIFI_EVENT_STA_START:
@@ -38,7 +39,8 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t e
     }
 }
 
-static void ip_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data) {
+static void ip_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
+{
     task_params_t* param = (task_params_t*)arg;
     switch (event_id) {
     case IP_EVENT_STA_GOT_IP:
@@ -51,7 +53,8 @@ static void ip_event_handler(void* arg, esp_event_base_t event_base, int32_t eve
     }
 }
 
-void handle_wifi(task_params_t* param) {
+void init_wifi(task_params_t* param)
+{
     esp_netif_create_default_wifi_sta();
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
@@ -62,7 +65,7 @@ void handle_wifi(task_params_t* param) {
     ESP_ERROR_CHECK(
         esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &ip_event_handler, param, NULL));
 
-    wifi_config_t wifi_config = {0};
+    wifi_config_t wifi_config = { 0 };
 
     const char* ssid = CONFIG_WIFI_SSID;
     const char* password = CONFIG_WIFI_PASSWORD;

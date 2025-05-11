@@ -7,4 +7,4 @@
 
 #define WIFI_RECONNECT_MAX_ATTEMPT 50
 
-void handle_wifi(task_params_t* params);
+void init_wifi(task_params_t* params);
