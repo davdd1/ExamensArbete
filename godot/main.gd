@@ -20,7 +20,7 @@ func _ready() -> void:
 		_set_paddle_color(left_paddle, map_macs[macs[0]])
 		left_paddle.is_cpu=false
 	else:
-		left_paddle.is_cpu
+		left_paddle.is_cpu = true
 		
 	if macs.size() >= 2:
 		right_paddle.assigned_mac = macs[1]
