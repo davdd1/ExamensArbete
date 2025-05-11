@@ -22,7 +22,7 @@ func get_blob_data(mac: String) -> Dictionary:
 
 func update_mac_map(mac: String, color: String) -> void:
 	if active_mac_map.has(mac):
-		return # It already existist
+		return # It already exists
 	#it didnt exist
 	print("added "+ mac +" to list with color ", color)
 	active_mac_map[mac] = color
