@@ -1,3 +1,5 @@
+#control.gd
+#menu script
 extends Control
 
 var selected_game_index = -1
@@ -6,7 +8,7 @@ var blob_node
 var blob_velocity := Vector2.ZERO
 var blob_speed = 200
 var smooth_velocity := Vector2.ZERO
-var MainScene := preload("res://main.tscn") as PackedScene
+@export var pong_scene:PackedScene
 var last_axis_y := {}       # mac → förra vel.x‐värdet
 
 var menu_items := [] #kommer innehålla alla menuitems-noder
@@ -14,7 +16,7 @@ var item_positions := [] #Motsvarande globala positioner
 var current_index := {} #mac_adress -> valt index
 
 var blobs := {} # mac -> blob node
-var blob_scene := preload("res://blob.tscn")
+var blob_scene := preload("res://Scenes/blob.tscn")
 
 func _ready() -> void:
 	WebSocketManager.set_current_scene(self)
@@ -30,25 +32,9 @@ func _ready() -> void:
 		item_positions.append(it.global_position)
 	current_index.clear()
 
-func _on_button_pressed() -> void:
-	
-	match selected_game_index:
-		0:
-			get_tree().change_scene_to_file("res://main.tscn")
-		1: 
-			print("selected Cool Game")
-		2: 
-			print("selected Not so cool game")
-		_:
-			print("nothing selected")
-		
-	return
-
 func _process(delta: float) -> void:
-	
 	var screen_size = get_viewport_rect().size
-	var center = screen_size / 2
-	var blob_size = 20
+	_update_all_blobs()
 	
 func _on_game_list_item_selected(index: int) -> void:
 	selected_game_index = index
@@ -63,6 +49,8 @@ const DIRS = {
 }
 
 func _handle_button_press(mac:String) -> void:
+	#print("inside _handle_button_press, is_inside_tree? ", is_inside_tree())
+	#print("get_tree() == ", get_tree())
 	var idx = current_index[mac]
 	var btn = menu_items[idx]            # MenuItem-knapp
 	var txt = btn.text                   # “Start”, “Pong” osv
@@ -72,11 +60,11 @@ func _handle_button_press(mac:String) -> void:
 		if selected_game_index >= 1:
 			match selected_game_index:
 				1:
-					if not ResourceLoader.exists("res://main.tscn"):
+					if not ResourceLoader.exists("res://Scenes/pong.tscn"):
 						push_error("COULD NOT FIND FILE")
 						return
-					print("Försöker gå in tree")
-					get_tree().change_scene_to_packed(MainScene)
+					#print("Försöker gå in tree")
+					get_tree().change_scene_to_packed(pong_scene)
 				2:
 					print("selected Cool Game")
 				3:
@@ -91,7 +79,6 @@ func _handle_button_press(mac:String) -> void:
 		print("✅ Valde spel:", txt)
 		# (Frivilligt) sätt en visuell markering på just det spelet
 		# t.ex. ändra outline-färg eller gör en blink-animation
-
 
 func is_valid_mac(mac: String) -> bool:
 	# Must be 17 chars long (XX:XX:XX:XX:XX:XX)
@@ -114,75 +101,38 @@ func is_valid_mac(mac: String) -> bool:
 		
 	return true
 
-func update_blob(data):
-	var json = data
+func _update_all_blobs() -> void:
+	var mac_map = WebSocketManager.get_active_macs_map()
 	var player_list_node = get_node("PanelContainer2/VBoxContainer2/VBoxContainer/playerList")
-	var mac_from_data = json.get("mac_address", "")
-	
-	# First validate the incoming MAC address
-	if !is_valid_mac(mac_from_data):
-		print("⚠️ Ignoring data with invalid MAC:", mac_from_data)
-		return
-		
-	#Extraherar Mac-addresser från noden
-	var macs = []
-	if player_list_node:
-		# Only process MACs that match the one in the data
-		for i in range($PanelContainer2/VBoxContainer2/VBoxContainer/playerList.get_item_count()):
-			var mac_address = $PanelContainer2/VBoxContainer2/VBoxContainer/playerList.get_item_text(i)
-			if mac_address == mac_from_data:
-				macs.append(mac_address)
-				break
-	else:
-		#ifall vi inte hittar player_list_node
-		print("⚠️ Could not find player_list_node")
-		pass
-	
-	if macs.size() <= 0:
-		#ifall ingen MAC matchar den i data
-		# Add MAC to player list if it's valid but not yet in the list
-		if is_valid_mac(mac_from_data):
-			print("📋 Adding missing MAC to player list: ", mac_from_data)
-			macs.append(mac_from_data)
-			# The WebSocketManager will add it to the player list on next update
-		else:
-			return
-		
-	var color = Color(json.get("color", "white"))
-	var gyro_x = json.get("joystick_x", 0.0)
-	var gyro_y = -json.get("joystick_y", 0.0)
-	
-	var velocity = Vector2(gyro_x, gyro_y)
-	
-	for mac in macs:
-		# Skip invalid MACs (double check, though our is_valid_mac already checked)
-		if !is_valid_mac(mac):
-			print("⚠️ Skipping invalid MAC:", mac)
+	for mac in mac_map.keys():
+		var data = WebSocketManager.get_blob_data(mac)
+		if data.is_empty():
 			continue
-			
-		# Skapa blob om den inte finns and track separately to avoid redeclaration issue
-		var blob_instance
+		
+		#extrahera värden
+		var color_str = mac_map[mac]
+		var color = Color(color_str)
+		var joy_x = data.get("joystick_x", 0.0)
+		var joy_y = -data.get("joystick_y", 0.0)
+		var velocity = Vector2(joy_x, joy_y)
+		var pressed = data.get("button_state", false)
+		
+		#se till all blobs existerar
 		if not blobs.has(mac):
-			blob_instance = blob_scene.instantiate()
-			add_child(blob_instance)
-			blob_instance.position = get_viewport_rect().size / 2  # börja i mitten
-			blob_instance.color = color  # förutsatt att Blob har .color
-			blob_instance.mac = mac      # om du vill spara MAC internt
-			blobs[mac] = blob_instance
-			print("🆕 Created blob for", mac)
-			
-			# Initialize menu navigation state for this controller
+			var b = blob_scene.instantiate()
+			add_child(b)
+			b.position = get_viewport_rect().size / 2
+			b.color = color
+			b.mac = mac
+			blobs[mac] = b
 			current_index[mac] = 0
 			last_axis_y[mac] = 0.0
-		else:
-			# Get existing blob if already created
-			blob_instance = blobs[mac]
-			
-		# Uppdatera rörelsen
-		blob_instance.set_velocity(velocity)
+		#uppdatera blob-rörelse
+		var blob = blobs[mac]
+		blob.set_velocity(velocity)
 		_navigate_menu(mac, velocity)
 		
-		if json.get("button_state", false):
+		if pressed:
 			_handle_button_press(mac)
 	
 func _navigate_menu(mac:String, vel:Vector2) -> void:

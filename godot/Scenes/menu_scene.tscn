@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://da7upf5goigaw"]
+[gd_scene load_steps=5 format=3 uid="uid://da7upf5goigaw"]
 
-[ext_resource type="Script" uid="uid://dpuuqfuec026k" path="res://control.gd" id="1_0fbet"]
-[ext_resource type="Script" uid="uid://bityyvviii41x" path="res://MenuItem.gd" id="2_62e2m"]
+[ext_resource type="Script" uid="uid://dpuuqfuec026k" path="res://control.gd" id="1_kt0tg"]
+[ext_resource type="Script" uid="uid://bityyvviii41x" path="res://MenuItem.gd" id="2_s0fe0"]
+[ext_resource type="PackedScene" uid="uid://brp6gcj5yxsrp" path="res://Scenes/pong.tscn" id="2_w4cdh"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0fbet"]
 bg_color = Color(0.427451, 0, 0.0705882, 1)
@@ -14,7 +15,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_0fbet")
+script = ExtResource("1_kt0tg")
+pong_scene = ExtResource("2_w4cdh")
 
 [node name="ColorRect" type="ColorRect" parent="."]
 layout_mode = 2
@@ -40,7 +42,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_0fbet")
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Start"
-script = ExtResource("2_62e2m")
+script = ExtResource("2_s0fe0")
 
 [node name="PanelContainer2" type="PanelContainer" parent="."]
 layout_mode = 0
@@ -91,12 +93,12 @@ layout_mode = 2
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
 text = "Pong"
-script = ExtResource("2_62e2m")
+script = ExtResource("2_s0fe0")
 
 [node name="Draw_io" type="Button" parent="GameChoice/VBoxContainer/VBoxContainer" groups=["MenuItem"]]
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
 text = "Draw IO"
-script = ExtResource("2_62e2m")
+script = ExtResource("2_s0fe0")
 
 [connection signal="pressed" from="PanelContainer/Button" to="." method="_on_button_pressed"]
