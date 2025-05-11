@@ -5,6 +5,9 @@
 #include "freertos/queue.h"
 #include <stdio.h>
 
+#define SENSOR_TASK_STACK_SIZE 4096
+#define UDP_TASK_STACK_SIZE 4096
+
 #define WIFI_CONNECTED_BIT BIT0
 #define IP_RECEIVED_BIT BIT1
 
