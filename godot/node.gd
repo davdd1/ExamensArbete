@@ -8,7 +8,7 @@ extends Node
 var player_list_node = null
 var current_scene_ref
 var active_mac_map: Dictionary  = {}
-var blob_data: Dictionary = {} # STORES LATED DATA from all macs
+var blob_data: Dictionary = {} # STORES RELATED DATA from all macs
 
 func update_blob_data(data: Dictionary) -> void:
 	var mac = data.get("mac_address", "")
