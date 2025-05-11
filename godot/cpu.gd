@@ -1,3 +1,4 @@
+#cpu.gd
 extends StaticBody2D
 
 var ball_pos : Vector2

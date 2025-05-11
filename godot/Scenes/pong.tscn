@@ -1,12 +1,11 @@
-[gd_scene load_steps=13 format=3 uid="uid://brp6gcj5yxsrp"]
+[gd_scene load_steps=12 format=3 uid="uid://brp6gcj5yxsrp"]
 
-[ext_resource type="Texture2D" uid="uid://pucgh0qbmij" path="res://assets/Bg.png" id="1_fbruq"]
-[ext_resource type="FontFile" uid="uid://cwd1tkm36irny" path="res://assets/pixel_font.ttf" id="2_bf3qf"]
-[ext_resource type="Script" uid="uid://dk6mporbd5vv5" path="res://main.gd" id="2_h0d34"]
-[ext_resource type="Script" uid="uid://co2pbku2l4ywq" path="res://player.gd" id="3_ul2rr"]
-[ext_resource type="Script" uid="uid://bqwshlpqp836d" path="res://cpu.gd" id="4_16hrx"]
-[ext_resource type="Script" uid="uid://7exnvuogwy0g" path="res://ball.gd" id="4_51vfc"]
-[ext_resource type="Script" uid="uid://d122mspb3euky" path="res://node.gd" id="7_7o1oi"]
+[ext_resource type="Texture2D" uid="uid://pucgh0qbmij" path="res://assets/Bg.png" id="1_4e36o"]
+[ext_resource type="Script" uid="uid://dk6mporbd5vv5" path="res://main.gd" id="2_quh8c"]
+[ext_resource type="Script" uid="uid://co2pbku2l4ywq" path="res://player.gd" id="3_2yi6e"]
+[ext_resource type="Script" uid="uid://7exnvuogwy0g" path="res://ball.gd" id="4_ji5cf"]
+[ext_resource type="FontFile" uid="uid://cwd1tkm36irny" path="res://assets/pixel_font.ttf" id="5_e86jt"]
+[ext_resource type="Script" uid="uid://d122mspb3euky" path="res://node.gd" id="6_tsdg2"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_6y131"]
 size = Vector2(20, 120)
@@ -25,15 +24,15 @@ size = Vector2(33, 640)
 
 [node name="Main" type="Sprite2D"]
 texture_filter = 1
-texture = ExtResource("1_fbruq")
+texture = ExtResource("1_4e36o")
 centered = false
-script = ExtResource("2_h0d34")
+script = ExtResource("2_quh8c")
 
-[node name="player" type="StaticBody2D" parent="."]
+[node name="leftPaddle" type="StaticBody2D" parent="."]
 position = Vector2(50, 324)
-script = ExtResource("3_ul2rr")
+script = ExtResource("3_2yi6e")
 
-[node name="ColorRect" type="ColorRect" parent="player"]
+[node name="ColorRect" type="ColorRect" parent="leftPaddle"]
 anchors_preset = 4
 anchor_top = 0.5
 anchor_bottom = 0.5
@@ -43,15 +42,15 @@ offset_bottom = 60.0
 grow_vertical = 2
 metadata/_edit_use_anchors_ = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="player"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="leftPaddle"]
 position = Vector2(10, 0)
 shape = SubResource("RectangleShape2D_6y131")
 
-[node name="cpu" type="StaticBody2D" parent="."]
+[node name="CPUPaddle" type="StaticBody2D" parent="."]
 position = Vector2(1082, 324)
-script = ExtResource("4_16hrx")
+script = ExtResource("3_2yi6e")
 
-[node name="ColorRect" type="ColorRect" parent="cpu"]
+[node name="ColorRect" type="ColorRect" parent="CPUPaddle"]
 anchors_preset = 4
 anchor_top = 0.5
 anchor_bottom = 0.5
@@ -61,14 +60,32 @@ offset_bottom = 60.0
 grow_vertical = 2
 metadata/_edit_use_anchors_ = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="cpu"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CPUPaddle"]
+position = Vector2(10, 0)
+shape = SubResource("RectangleShape2D_6y131")
+
+[node name="rightPaddle" type="StaticBody2D" parent="."]
+position = Vector2(1082, 324)
+script = ExtResource("3_2yi6e")
+
+[node name="ColorRect" type="ColorRect" parent="rightPaddle"]
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -60.0
+offset_right = 20.0
+offset_bottom = 60.0
+grow_vertical = 2
+metadata/_edit_use_anchors_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="rightPaddle"]
 position = Vector2(10, 0)
 shape = SubResource("RectangleShape2D_6y131")
 
 [node name="ball" type="CharacterBody2D" parent="."]
 position = Vector2(576, 324)
 collision_mask = 3
-script = ExtResource("4_51vfc")
+script = ExtResource("4_ji5cf")
 
 [node name="ColorRect" type="ColorRect" parent="ball"]
 anchors_preset = 8
@@ -115,7 +132,7 @@ shape = SubResource("RectangleShape2D_ah7up")
 offset_left = 456.0
 offset_right = 506.0
 offset_bottom = 50.0
-theme_override_fonts/font = ExtResource("2_bf3qf")
+theme_override_fonts/font = ExtResource("5_e86jt")
 theme_override_font_sizes/font_size = 50
 text = "0"
 horizontal_alignment = 1
@@ -125,7 +142,7 @@ vertical_alignment = 1
 offset_left = 648.0
 offset_right = 698.0
 offset_bottom = 50.0
-theme_override_fonts/font = ExtResource("2_bf3qf")
+theme_override_fonts/font = ExtResource("5_e86jt")
 theme_override_font_sizes/font_size = 50
 text = "0"
 horizontal_alignment = 1
@@ -136,7 +153,7 @@ one_shot = true
 autostart = true
 
 [node name="WebSocketNode" type="Node" parent="."]
-script = ExtResource("7_7o1oi")
+script = ExtResource("6_tsdg2")
 
 [connection signal="body_entered" from="scoreLeft" to="." method="_on_score_left_body_entered"]
 [connection signal="body_entered" from="scoreRight" to="." method="_on_score_right_body_entered"]
