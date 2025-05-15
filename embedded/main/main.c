@@ -12,9 +12,11 @@
 #include <esp_task.h>
 #include <stdio.h>
 
-/*
-TODO: Skriva workflow för hela systemet
-*/
+/**
+ * @brief Entry point for application initialization and task management.
+ *
+ * Initializes non-volatile storage, network interfaces, event groups, and queues. Sets up WiFi and LED subsystems, creates sensor and UDP handling tasks, and synchronizes startup using event bits. Handles initialization and task creation errors by logging and terminating execution as needed.
+ */
 
 void app_main()
 {
