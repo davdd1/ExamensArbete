@@ -23,3 +23,21 @@ void init_sntp(void){
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
+
+void init_time(void) {
+    sntp_setoperatingmode(SNTP_OPMODE_POLL);
+    sntp_setservername(0, "pool.ntp.org");
+    sntp_init();
+    
+    // Wait for time to be set
+    time_t now = 0;
+    struct tm timeinfo = { 0 };
+    int retry = 0;
+    
+    while (timeinfo.tm_year < (2020 - 1900) && ++retry < 15) {
+        printf("Waiting for system time to be set... (%d/15)\n", retry);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        time(&now);
+        localtime_r(&now, &timeinfo);
+    }
+}
