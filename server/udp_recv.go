@@ -64,11 +64,11 @@ func UdpReceiver() {
 		case 1:
 			//hantera sensor data
 			pkt := decodePacket(buf)
-			log.Printf("GO DECODE — raw timestamp bytes: % x", buf[timestampOff:timestampOff+8])
-			log.Printf("GO DECODE — pkt.Timestamp = %d ms", pkt.Timestamp)
-			serverNow := time.Now().UnixMilli()
-			uplink := serverNow - int64(pkt.Timestamp)
-			log.Printf("GO LOG     — ServerTime=%d, SentTimestamp=%d → uplink=%d ms", serverNow, pkt.Timestamp, uplink)
+			//log.Printf("GO DECODE — raw timestamp bytes: % x", buf[timestampOff:timestampOff+8])
+			//log.Printf("GO DECODE — pkt.Timestamp = %d ms", pkt.Timestamp)
+			//serverNow := time.Now().UnixMilli()
+			//uplink := serverNow - int64(pkt.Timestamp)
+			//log.Printf("GO LOG     — ServerTime=%d, SentTimestamp=%d → uplink=%d ms", serverNow, pkt.Timestamp, uplink)
 
 			handleSensor(pkt, addr)
 		}
@@ -192,7 +192,10 @@ func handle_ACK_request(conn *net.UDPConn, addr *net.UDPAddr, buf []byte) {
 	}
 
 	// Send ACK with color index
-	ack := []byte{1, byte(assignedIndex)}
+	ack := make([]byte, 1+1+8)
+	ack[0] = 1
+	ack[1] = byte(assignedIndex)
+	binary.BigEndian.PutUint64(ack[2:], uint64(time.Now().UnixMilli()))
 	_, err := conn.WriteToUDP(ack, addr)
 	if err != nil {
 		log.Println("Failed to send connection acknowledgment with index:", err)
