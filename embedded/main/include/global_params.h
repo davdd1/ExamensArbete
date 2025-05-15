@@ -44,8 +44,10 @@ typedef struct Packet {
         uint8_t _padding2[3]; // 3 bytes padding at the end → 4-byte alignment
     } sensor;
     uint64_t timestamp; // Timestamp in milliseconds
-    
+
 } packet_t; // Total 56 pga aligenment  bytes
 
 // Declare an external instance of the unified packet
 extern packet_t global_packet;
+
+void init_sntp(void);
