@@ -6,6 +6,7 @@ import (
 	"log"
 	"math"
 	"net"
+	"time"
 )
 
 func decodePacket(buf []byte) Packet {
@@ -63,6 +64,12 @@ func UdpReceiver() {
 		case 1:
 			//hantera sensor data
 			pkt := decodePacket(buf)
+			log.Printf("GO DECODE — raw timestamp bytes: % x", buf[timestampOff:timestampOff+8])
+			log.Printf("GO DECODE — pkt.Timestamp = %d ms", pkt.Timestamp)
+			serverNow := time.Now().UnixMilli()
+			uplink := serverNow - int64(pkt.Timestamp)
+			log.Printf("GO LOG     — ServerTime=%d, SentTimestamp=%d → uplink=%d ms", serverNow, pkt.Timestamp, uplink)
+
 			handleSensor(pkt, addr)
 		}
 	}
@@ -296,9 +303,15 @@ func handleSensor(pkt Packet, addr *net.UDPAddr) {
 		ButtonState: pkt.ButtonState != 0, // konvertera uint8 → bool
 		MacAddr:     macStr,
 		Color:       device.Color,
+		SentTimeStamp: pkt.Timestamp,
+		ServerTime: uint64(time.Now().UnixMilli()), // Skicka serverns tid
 		// BatteryLevel lämnas utelämnad tills vi börjar skicka den
 	}
-
+	// log.Printf("From ESP@%v (sent %d): uplink %d ms",
+	// 	addr,  // UDP‐adressen som conn.ReadFromUDP ger dig
+	// 	data.SentTimeStamp,
+	// 	data.ServerTime-data.SentTimeStamp,
+	// )
 	// Skicka vidare som JSON till alla WebSocket-klienter
 	BroadcastSensorData(data)
 }

@@ -8,6 +8,12 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+const (
+    headerSize   = 4 + 6 + 2    // Type + MAC + padding
+    sensorSize   = 8*4 + 1 + 3  // 8 floats, 1 byte button, 3 bytes padding
+    timestampOff = headerSize + sensorSize  // = 4+6+2 + (32+4) = 48
+)
+
 // Det packet vi tar emot från ESPn
 type Packet struct {
 	Type        int32
@@ -44,8 +50,8 @@ type SensorData struct {
 	BatteryLevel float32 `json:"battery_level,omitempty"`
 	MacAddr      string  `json:"mac_address"` // Ändrat till en sträng
 	Color        string  `json:"color,omitempty"`
-	SentTimeStamp int64  `json:"sent_timestamp_ms"` // ESP->GO
-	ServerTime   int64  `json:"server_time_ms"` // Go->Godot
+	SentTimeStamp uint64  `json:"sent_timestamp_ms"` // ESP->GO
+	ServerTime   uint64  `json:"server_time_ms"` // Go->Godot
 }
 
 // Device represents a connected physical device

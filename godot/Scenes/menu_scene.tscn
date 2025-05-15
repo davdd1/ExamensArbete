@@ -101,4 +101,23 @@ theme_override_font_sizes/font_size = 30
 text = "Draw IO"
 script = ExtResource("2_s0fe0")
 
+[node name="PanelContainer3" type="PanelContainer" parent="."]
+layout_mode = 0
+offset_left = 720.0
+offset_top = 24.0
+offset_right = 1152.0
+offset_bottom = 160.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer3"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PanelContainer3/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 25
+text = "MS"
+horizontal_alignment = 1
+
+[node name="ItemList" type="ItemList" parent="PanelContainer3/VBoxContainer"]
+layout_mode = 2
+
 [connection signal="pressed" from="PanelContainer/Button" to="." method="_on_button_pressed"]

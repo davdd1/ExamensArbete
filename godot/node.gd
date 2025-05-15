@@ -4,16 +4,43 @@ extends Node
 
 # Ange websocket-URL:en (inkludera ws:// och porten)
 @export var websocket_url: String = "ws://localhost:8080/ws"
-
+var player_list_node_txt: ItemList  # ← den andra ItemList för ms-text
 var player_list_node = null
 var current_scene_ref
 var active_mac_map: Dictionary  = {}
 var blob_data: Dictionary = {} # STORES RELATED DATA from all macs
 
+func register_player_list_txt(node: ItemList) -> void:
+	player_list_node_txt = node
+
 func update_blob_data(data: Dictionary) -> void:
 	var mac = data.get("mac_address", "")
 	if mac != "":
 		blob_data[mac] = data
+	_refresh_player_list()
+
+func _refresh_player_list()-> void:
+	if player_list_node_txt == null:
+		print("inget")
+		return
+	player_list_node_txt.clear()
+	var now_ms = int(Time.get_unix_time_from_system() * 1000)
+	for mac in active_mac_map.keys():
+		var d = blob_data.get(mac, null)
+		if d == null:
+			player_list_node_txt.add_item("%s - ... ms" % mac) # ingen data än
+		else:
+			#räkna ut uplink / downlink / total
+			var sent = int(d.get("sent_timestamp_ms", 0))
+			var server = int(d.get("server_time_ms", 0))
+			var uplink = server - sent
+			var downlink = now_ms - server
+			var total = now_ms - sent
+			#bygg txt sträng
+			var txt = "%s  total:%d ms  up:%d ms  down:%d ms" % [mac, total, uplink, downlink]
+			print("ladde till text " + txt)
+			player_list_node_txt.add_item(txt)
+	
 
 func get_blob_data(mac: String) -> Dictionary:
 	if blob_data.has(mac):
