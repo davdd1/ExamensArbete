@@ -42,7 +42,7 @@ void app_main()
     
     xEventGroupWaitBits(global_task_params.event_handle, BIT0 | BIT1, pdFALSE, pdTRUE, portMAX_DELAY);
     //Sätter tidszon
-    init_sntp();
+    init_time();
 
     if (xTaskCreate(run_udp_task, "udp_task", UDP_TASK_STACK_SIZE, &global_task_params, 5, NULL) != pdPASS) {
         ESP_LOGE("TASK", "Failed to create UDP task");
