@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// decodePacket decodes a byte slice into a Packet struct, extracting sensor values, MAC address, button state, and a big-endian timestamp.
 func decodePacket(buf []byte) Packet {
 	// buf must be at least packetSize bytes
 	return Packet{
@@ -29,6 +30,11 @@ func decodePacket(buf []byte) Packet {
 	}
 }
 
+// UdpReceiver starts a UDP server on port 1234 to receive and process device packets.
+// 
+// It listens for incoming UDP packets, distinguishing between connection requests and sensor data based on the packet type byte.
+// Connection requests trigger an acknowledgment response, while sensor data packets are decoded and forwarded for further processing.
+// Invalid or malformed packets are logged and ignored.
 func UdpReceiver() {
 	udpAddr, err := net.ResolveUDPAddr("udp", ":1234")
 	if err != nil {
@@ -102,6 +108,7 @@ func isValidMACAddress(mac string) bool {
 	return true
 }
 
+// handle_ACK_request processes a device connection request, validates the MAC address, updates device mappings, assigns a color, and sends an acknowledgment with the assigned color index and current server timestamp to the client.
 func handle_ACK_request(conn *net.UDPConn, addr *net.UDPAddr, buf []byte) {
 	// Validate packet format and extract MAC address
 	if len(buf) < 10 {
@@ -206,6 +213,9 @@ func handle_ACK_request(conn *net.UDPConn, addr *net.UDPAddr, buf []byte) {
 	fmt.Println("Device mapped:", addrStr, "->", macStr)
 }
 
+// handleSensor processes incoming sensor data packets from a UDP device, updating device mappings and broadcasting the data to WebSocket clients.
+// 
+// If the UDP address is not associated with a known device, it attempts to auto-register the device using the MAC address from the packet, validating its format and uniqueness. The function updates the device's last seen timestamp and constructs a SensorData struct containing sensor readings, the device's MAC address and color, the packet's original timestamp, and the current server time. The sensor data is then broadcast to all connected WebSocket clients. Invalid or inconsistent data is logged and ignored.
 func handleSensor(pkt Packet, addr *net.UDPAddr) {
 	addrStr := addr.String()
 

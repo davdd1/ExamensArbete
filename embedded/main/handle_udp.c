@@ -34,6 +34,11 @@ static int64_t time_offset_ms = 0;
 #define UDP_PORT CONFIG_SERVER_PORT
 #define UDP_SERVER_IP CONFIG_SERVER_IP
 
+/**
+ * @brief Runs the UDP communication task for sensor data transmission and time synchronization.
+ *
+ * Establishes a UDP connection to a configured server, sends a connection request, and waits for an acknowledgment containing a server timestamp. Calculates the time offset between the server and local device. Continuously retrieves sensor data from a FreeRTOS queue, synchronizes its timestamp with the server, and sends it to the server via UDP. Handles send errors with retries and cleans up resources on failure or task termination.
+ */
 void run_udp_task(void* params)
 {
     ESP_LOGI("UDP", "Starting UDP task...");
