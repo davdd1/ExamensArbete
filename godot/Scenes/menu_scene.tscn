@@ -118,6 +118,7 @@ text = "MS"
 horizontal_alignment = 1
 
 [node name="ItemList" type="ItemList" parent="PanelContainer3/VBoxContainer"]
+custom_minimum_size = Vector2(0, 90.315)
 layout_mode = 2
 
 [connection signal="pressed" from="PanelContainer/Button" to="." method="_on_button_pressed"]

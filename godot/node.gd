@@ -7,8 +7,11 @@ extends Node
 var player_list_node_txt: ItemList  # ← den andra ItemList för ms-text
 var player_list_node = null
 var current_scene_ref
+
 var active_mac_map: Dictionary  = {}
 var blob_data: Dictionary = {} # STORES RELATED DATA from all macs
+
+var latency_samples : Dictionary = {}
 
 func register_player_list_txt(node: ItemList) -> void:
 	player_list_node_txt = node
@@ -17,29 +20,38 @@ func update_blob_data(data: Dictionary) -> void:
 	var mac = data.get("mac_address", "")
 	if mac != "":
 		blob_data[mac] = data
+	_add_latency_sample(mac)
 	_refresh_player_list()
+
+func _add_latency_sample(mac: String) -> void:
+	var d = blob_data[mac]
+	var sent   = int(d.get("sent_timestamp_ms", 0))
+	var server = int(d.get("server_time_ms",   0))
+	var now_sec = Time.get_unix_time_from_system()
+	var now_ms = int(now_sec * 1000)
+	var total  = now_ms - sent
+	if not latency_samples.has(mac):
+		latency_samples[mac] = []
+	var arr = latency_samples[mac]
+	arr.append(total)
+	if arr.size() > 100:
+		arr.pop_front()
 
 func _refresh_player_list()-> void:
 	if player_list_node_txt == null:
-		print("inget")
 		return
 	player_list_node_txt.clear()
-	var now_ms = int(Time.get_unix_time_from_system() * 1000)
+	
 	for mac in active_mac_map.keys():
-		var d = blob_data.get(mac, null)
-		if d == null:
-			player_list_node_txt.add_item("%s - ... ms" % mac) # ingen data än
+		if not latency_samples.has(mac) or latency_samples[mac].size() == 0:
+			player_list_node_txt.add_item("%s – … ms" % mac)
 		else:
-			#räkna ut uplink / downlink / total
-			var sent = int(d.get("sent_timestamp_ms", 0))
-			var server = int(d.get("server_time_ms", 0))
-			var uplink = server - sent
-			var downlink = now_ms - server
-			var total = now_ms - sent
-			#bygg txt sträng
-			var txt = "%s  total:%d ms  up:%d ms  down:%d ms" % [mac, total, uplink, downlink]
-			print("ladde till text " + txt)
-			player_list_node_txt.add_item(txt)
+			var arr = latency_samples[mac]
+			var sum = 0
+			for v in arr:
+				sum += v
+			var avg = int(sum / arr.size())
+			player_list_node_txt.add_item("%s – avg %d ms" % [mac, avg])
 	
 
 func get_blob_data(mac: String) -> Dictionary:
@@ -89,7 +101,6 @@ func _process(delta: float) -> void:
 	# Viktigt: poll() måste anropas regelbundet för att hantera in-/utdata.
 	socket.poll()
 	var state = socket.get_ready_state()
-	
 	if state == WebSocketPeer.STATE_OPEN:
 		# Medan det finns meddelanden i kön, hämta dem.
 		while socket.get_available_packet_count() > 0:
