@@ -9,6 +9,10 @@
 #include <netinet/in.h>
 #include <sys/param.h>
 #include <sys/socket.h>
+#include <sys/time.h>
+#include <time.h>
+#include <endian.h>
+#include <inttypes.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
@@ -121,6 +125,14 @@ void run_udp_task(void* params)
         memset(&sensor_packet.sensor, 0, sizeof(sensor_packet.sensor));
         xQueueReceive(task_params->sensor_data_queue, &sensor_packet, portMAX_DELAY);
         memcpy(sensor_packet.mac_addr, connection_packet.mac_addr, sizeof(connection_packet.mac_addr));
+
+        // Get the current time
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        uint64_t ms = (uint64_t)(tv.tv_sec) * 1000ULL + (uint64_t)(tv.tv_usec) / 1000;
+        // Set the timestamp in the packet
+        sensor_packet.timestamp = htobe64(ms);
+        printf("UDP: Sending packet with timestamp: %" PRIu64 " ms\n", ms);
         // Mock data
         //  global_sensor_packet.player_id = 2;
         //  global_sensor_packet.gyro_x = 4.23;
