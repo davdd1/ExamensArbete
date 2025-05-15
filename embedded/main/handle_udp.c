@@ -132,7 +132,7 @@ void run_udp_task(void* params)
         uint64_t ms = (uint64_t)(tv.tv_sec) * 1000ULL + (uint64_t)(tv.tv_usec) / 1000;
         // Set the timestamp in the packet
         sensor_packet.timestamp = htobe64(ms);
-        printf("UDP: Sending packet with timestamp: %" PRIu64 " ms\n", ms);
+        //printf("UDP: Sending packet with timestamp: %" PRIu64 " ms\n", ms);
         // Mock data
         //  global_sensor_packet.player_id = 2;
         //  global_sensor_packet.gyro_x = 4.23;
