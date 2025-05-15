@@ -7,6 +7,7 @@
 #include "freertos/event_groups.h"
 #include "lwip/err.h"
 #include "lwip/sys.h"
+#include "global_params.h"
 
 static const char* TAG = "wifi";
 static int reconnect_counter = 0;
@@ -44,6 +45,7 @@ static void ip_event_handler(void* arg, esp_event_base_t event_base, int32_t eve
     task_params_t* param = (task_params_t*)arg;
     switch (event_id) {
     case IP_EVENT_STA_GOT_IP:
+        init_time();
         xEventGroupSetBits(param->event_handle, IP_RECEIVED_BIT);
         ESP_LOGI(TAG, "GOT IP, set bit1");
         break;

@@ -51,4 +51,3 @@ typedef struct Packet {
 extern packet_t global_packet;
 
 void init_time(void);
-void init_sntp(void);
