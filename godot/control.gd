@@ -18,9 +18,11 @@ var current_index := {} #mac_adress -> valt index
 var blobs := {} # mac -> blob node
 var blob_scene := preload("res://Scenes/blob.tscn")
 
+
 func _ready() -> void:
 	WebSocketManager.set_current_scene(self)
 	WebSocketManager.register_player_list(get_node("PanelContainer2/VBoxContainer2/VBoxContainer/playerList"))
+	WebSocketManager.register_player_list_txt(get_node("PanelContainer3/VBoxContainer/ItemList"))
 	
 	#hämta alla menyalternativ
 	menu_items = get_tree().get_nodes_in_group("MenuItem")

@@ -6,6 +6,7 @@ import (
 	"log"
 	"math"
 	"net"
+	"time"
 )
 
 func decodePacket(buf []byte) Packet {
@@ -24,6 +25,7 @@ func decodePacket(buf []byte) Packet {
 		JoystickY:   math.Float32frombits(binary.LittleEndian.Uint32(buf[40:])),
 		ButtonState: buf[44],
 		// skip buf [45-47], padding
+		Timestamp: binary.BigEndian.Uint64(buf[48:56]),
 	}
 }
 
@@ -62,6 +64,12 @@ func UdpReceiver() {
 		case 1:
 			//hantera sensor data
 			pkt := decodePacket(buf)
+			//log.Printf("GO DECODE — raw timestamp bytes: % x", buf[timestampOff:timestampOff+8])
+			//log.Printf("GO DECODE — pkt.Timestamp = %d ms", pkt.Timestamp)
+			//serverNow := time.Now().UnixMilli()
+			//uplink := serverNow - int64(pkt.Timestamp)
+			//log.Printf("GO LOG     — ServerTime=%d, SentTimestamp=%d → uplink=%d ms", serverNow, pkt.Timestamp, uplink)
+
 			handleSensor(pkt, addr)
 		}
 	}
@@ -184,7 +192,10 @@ func handle_ACK_request(conn *net.UDPConn, addr *net.UDPAddr, buf []byte) {
 	}
 
 	// Send ACK with color index
-	ack := []byte{1, byte(assignedIndex)}
+	ack := make([]byte, 1+1+8)
+	ack[0] = 1
+	ack[1] = byte(assignedIndex)
+	binary.BigEndian.PutUint64(ack[2:], uint64(time.Now().UnixMilli()))
 	_, err := conn.WriteToUDP(ack, addr)
 	if err != nil {
 		log.Println("Failed to send connection acknowledgment with index:", err)
@@ -295,9 +306,15 @@ func handleSensor(pkt Packet, addr *net.UDPAddr) {
 		ButtonState: pkt.ButtonState != 0, // konvertera uint8 → bool
 		MacAddr:     macStr,
 		Color:       device.Color,
+		SentTimeStamp: pkt.Timestamp,
+		ServerTime: uint64(time.Now().UnixMilli()), // Skicka serverns tid
 		// BatteryLevel lämnas utelämnad tills vi börjar skicka den
 	}
-
+	// log.Printf("From ESP@%v (sent %d): uplink %d ms",
+	// 	addr,  // UDP‐adressen som conn.ReadFromUDP ger dig
+	// 	data.SentTimeStamp,
+	// 	data.ServerTime-data.SentTimeStamp,
+	// )
 	// Skicka vidare som JSON till alla WebSocket-klienter
 	BroadcastSensorData(data)
 }
