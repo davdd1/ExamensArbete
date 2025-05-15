@@ -43,7 +43,9 @@ typedef struct Packet {
         uint8_t joy_is_pressed; // 0 = not pressed, 1 = pressed
         uint8_t _padding2[3]; // 3 bytes padding at the end → 4-byte alignment
     } sensor;
-} packet_t; // Total 48 bytes
+    uint64_t timestamp; // Timestamp in milliseconds
+    
+} packet_t; // Total 56 pga aligenment  bytes
 
 // Declare an external instance of the unified packet
 extern packet_t global_packet;
