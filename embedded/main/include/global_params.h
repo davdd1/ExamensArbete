@@ -50,4 +50,5 @@ typedef struct Packet {
 // Declare an external instance of the unified packet
 extern packet_t global_packet;
 
+void init_time(void);
 void init_sntp(void);
