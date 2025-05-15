@@ -23,11 +23,12 @@ type Packet struct {
 	JoystickY   float32
 	ButtonState uint8
 	_           [3]byte // padding
+	Timestamp uint64 // MS sedan epok, Big endian
 	//Längre fram Batterylevel?
 }
 
-const packetSize = 4 /*Type*/ + 6 /*MacAddr*/ + 2 /*padding*/ + 8*4 /*8 floats*/ + 1 /*ButtonState*/ + 3 /*trailing padding*/
-// -> 48 bytes
+const packetSize = 4 /*Type*/ + 6 /*MacAddr*/ + 2 /*padding*/ + 8*4 /*8 floats*/ + 1 /*ButtonState*/ + 3 /*trailing padding*/ + 8 /*Timestamp*/
+// -> 56 bytes
 
 // SensorData representerar ett uppdaterat paket med alla sensordata och metadata.
 type SensorData struct {
@@ -43,6 +44,8 @@ type SensorData struct {
 	BatteryLevel float32 `json:"battery_level,omitempty"`
 	MacAddr      string  `json:"mac_address"` // Ändrat till en sträng
 	Color        string  `json:"color,omitempty"`
+	SentTimeStamp int64  `json:"sent_timestamp_ms"` // ESP->GO
+	ServerTime   int64  `json:"server_time_ms"` // Go->Godot
 }
 
 // Device represents a connected physical device

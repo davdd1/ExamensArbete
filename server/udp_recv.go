@@ -24,6 +24,7 @@ func decodePacket(buf []byte) Packet {
 		JoystickY:   math.Float32frombits(binary.LittleEndian.Uint32(buf[40:])),
 		ButtonState: buf[44],
 		// skip buf [45-47], padding
+		Timestamp: binary.BigEndian.Uint64(buf[48:56]),
 	}
 }
 
