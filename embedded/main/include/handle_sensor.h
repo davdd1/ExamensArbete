@@ -30,7 +30,13 @@
 #define JOY_DEADZONE 200
 
 // Button
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+#define SW_GPIO GPIO_NUM_16
+#endif
+
+#ifdef CONFIG_IDF_TARGET_ESP32C6
 #define SW_GPIO GPIO_NUM_10
+#endif
 
 void write_register(uint8_t reg, uint8_t value);
 void read_mpu6050_data(uint8_t start_reg, int16_t* data);
