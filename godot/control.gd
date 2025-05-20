@@ -17,6 +17,7 @@ var current_index := {} #mac_adress -> valt index
 
 var blobs := {} # mac -> blob node
 var blob_scene := preload("res://Scenes/blob.tscn")
+var draw_scene := preload("res://draw.tscn")
 
 
 func _ready() -> void:
@@ -68,7 +69,11 @@ func _handle_button_press(mac:String) -> void:
 					#print("Försöker gå in tree")
 					get_tree().change_scene_to_packed(pong_scene)
 				2:
-					print("selected Cool Game")
+					if not ResourceLoader.exists("res://draw.tscn"):
+						push_error("COULD NOT FIND DRAW SCENE")
+						return
+					
+					get_tree().change_scene_to_file("res://draw.tscn")
 				3:
 					print("selected Not so cool game")
 				4:
