@@ -4,6 +4,7 @@ import(
 	"encoding/json"
 	"log"
 	"github.com/gorilla/websocket"
+	"fmt"
 )
 
 
@@ -14,7 +15,7 @@ func BroadcastSensorData(data SensorData) {
 		return
 	}
 
-	//fmt.Println("JSON message:", string(message))
+	fmt.Println("JSON message:", string(message))
 
 	clientsMu.Lock()
 	defer clientsMu.Unlock()

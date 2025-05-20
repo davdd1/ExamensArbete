@@ -13,6 +13,11 @@ var blob_data: Dictionary = {} # STORES RELATED DATA from all macs
 
 var latency_samples : Dictionary = {}
 
+var drawing_scene = null
+
+func register_drawing_scene(scene):
+	drawing_scene = scene
+
 func register_player_list_txt(node: ItemList) -> void:
 	player_list_node_txt = node
 
@@ -22,6 +27,9 @@ func update_blob_data(data: Dictionary) -> void:
 		blob_data[mac] = data
 	_add_latency_sample(mac)
 	_refresh_player_list()
+	#ifall drawing scene, skicka data
+	if drawing_scene:
+		drawing_scene._on_sensor_data(mac, data)
 
 func _add_latency_sample(mac: String) -> void:
 	var d = blob_data[mac]
