@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+// TEST
+
 // decodePacket decodes a byte slice into a Packet struct, extracting sensor values, MAC address, button state, and a big-endian timestamp.
 func decodePacket(buf []byte) Packet {
 	// buf must be at least packetSize bytes

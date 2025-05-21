@@ -17,7 +17,7 @@ var current_index := {} #mac_adress -> valt index
 
 var blobs := {} # mac -> blob node
 var blob_scene := preload("res://Scenes/blob.tscn")
-var draw_scene := preload("res://draw.tscn")
+var draw_scene := preload("res://Scenes/draw.tscn")
 
 
 func _ready() -> void:
@@ -35,8 +35,7 @@ func _ready() -> void:
 		item_positions.append(it.global_position)
 	current_index.clear()
 
-func _process(delta: float) -> void:
-	var screen_size = get_viewport_rect().size
+func _process(_delta: float) -> void:
 	_update_all_blobs()
 	
 func _on_game_list_item_selected(index: int) -> void:
@@ -69,11 +68,11 @@ func _handle_button_press(mac:String) -> void:
 					#print("Försöker gå in tree")
 					get_tree().change_scene_to_packed(pong_scene)
 				2:
-					if not ResourceLoader.exists("res://draw.tscn"):
+					if not ResourceLoader.exists("res://Scenes/draw.tscn"):
 						push_error("COULD NOT FIND DRAW SCENE")
 						return
 					
-					get_tree().change_scene_to_file("res://draw.tscn")
+					get_tree().change_scene_to_file("res://Scenes/draw.tscn")
 				3:
 					print("selected Not so cool game")
 				4:
@@ -110,7 +109,7 @@ func is_valid_mac(mac: String) -> bool:
 
 func _update_all_blobs() -> void:
 	var mac_map = WebSocketManager.get_active_macs_map()
-	var player_list_node = get_node("PanelContainer2/VBoxContainer2/VBoxContainer/playerList")
+	#var player_list_node = get_node("PanelContainer2/VBoxContainer2/VBoxContainer/playerList")
 	for mac in mac_map.keys():
 		var data = WebSocketManager.get_blob_data(mac)
 		if data.is_empty():
