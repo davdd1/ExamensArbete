@@ -11,6 +11,28 @@ var current_scene_ref
 var active_mac_map: Dictionary  = {}
 var blob_data: Dictionary = {} # STORES RELATED DATA from all macs
 
+var roll_history_per_mac = {}   # mac -> Array[float]
+var offset_per_mac = {}         # mac -> float
+var calibration_count = {}
+var roll_calib_sum = {}
+
+const HISTORY_SIZE = 50
+const CALIB_SAMPLES = 30
+
+func get_smoothed_roll(mac: String) -> float:
+	if not roll_history_per_mac.has(mac):
+		return 0.0
+	var hist = roll_history_per_mac[mac]
+	if hist.size() == 0:
+		return 0.0
+	var arr = hist.duplicate()
+	arr.sort()
+	var mid = arr.size() / 2
+	if arr.size() % 2 == 1:
+		return arr[mid]
+	else:
+		return (arr[mid - 1] + arr[mid]) / 2.0
+	
 var latency_samples : Dictionary = {}
 
 var drawing_scene = null
@@ -24,17 +46,41 @@ func register_player_list_txt(node: ItemList) -> void:
 func update_blob_data(data: Dictionary) -> void:
 	var mac = data.get("mac_address", "")
 	if mac != "":
+		# Hantera kalibrering och smoothing för roll
+		var ay = float(data.get("accel_x", 0.0))
+		var az = float(data.get("accel_z", 0.0))
+		var roll = atan2(-ay, az)
+		
+		if not roll_history_per_mac.has(mac):
+			roll_history_per_mac[mac] = []
+			roll_calib_sum[mac] = 0.0
+			calibration_count[mac] = 0
+			offset_per_mac[mac] = 0.0
+			
+		# Kalibrera först (samla samples)
+		if calibration_count[mac] < CALIB_SAMPLES:
+			roll_calib_sum[mac] += roll
+			calibration_count[mac] += 1
+			if calibration_count[mac] == CALIB_SAMPLES:
+				offset_per_mac[mac] = roll_calib_sum[mac] / CALIB_SAMPLES
+				print("Kalibrering klar för %s! Offset: %f" % [mac, offset_per_mac[mac]])
+		else:
+			var roll_adj = roll - offset_per_mac[mac]
+			roll_history_per_mac[mac].append(roll_adj)
+			if roll_history_per_mac[mac].size() > HISTORY_SIZE:
+				roll_history_per_mac[mac].pop_front()
+				
 		blob_data[mac] = data
 	_add_latency_sample(mac)
 	_refresh_player_list()
-	#ifall drawing scene, skicka data
+	
 	if drawing_scene:
 		drawing_scene._on_sensor_data(mac, data)
 
 func _add_latency_sample(mac: String) -> void:
 	var d = blob_data[mac]
 	var sent   = int(d.get("sent_timestamp_ms", 0))
-	var server = int(d.get("server_time_ms",   0))
+	#var server = int(d.get("server_time_ms",   0))
 	var now_sec = Time.get_unix_time_from_system()
 	var now_ms = int(now_sec * 1000)
 	var total  = now_ms - sent
@@ -67,12 +113,12 @@ func get_blob_data(mac: String) -> Dictionary:
 		return blob_data[mac]
 	return {}
 
-func update_mac_map(mac: String, color: String) -> void:
+func update_mac_map(mac: String, _color: String) -> void:
 	if active_mac_map.has(mac):
 		return # It already exists
 	#it didnt exist
-	print("added "+ mac +" to list with color ", color)
-	active_mac_map[mac] = color
+	print("added "+ mac +" to list with color ", _color)
+	active_mac_map[mac] = _color
 
 #retunerar map och macs
 func get_active_macs_map() -> Dictionary:
@@ -105,7 +151,7 @@ func _ready() -> void:
 	else:
 		print("Ansluten till websocket på ", websocket_url)
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	# Viktigt: poll() måste anropas regelbundet för att hantera in-/utdata.
 	socket.poll()
 	var state = socket.get_ready_state()
