@@ -5,7 +5,7 @@ var smooth_velocity := Vector2.ZERO
 @export var speed := 500
 @export var radius := 0
 var color := Color.RED
-var mac := "Jesper"
+var mac := ""
 
 func _ready():
 	$macname.text = mac
