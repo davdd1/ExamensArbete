@@ -40,6 +40,13 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t e
     }
 }
 
+/**
+ * @brief Handles IP events for the WiFi station interface.
+ *
+ * Invoked when IP-related events occur. On receiving an IP address (`IP_EVENT_STA_GOT_IP`), initializes system time, sets the IP received bit in the provided event group, and logs the event.
+ *
+ * @param arg Pointer to a `task_params_t` structure containing the event group handle.
+ */
 static void ip_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
     task_params_t* param = (task_params_t*)arg;

@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://0oobvv14afq2"]
+
+[ext_resource type="Script" uid="uid://cyb4njj64pys7" path="res://paddle.gd" id="1_nxw3c"]
+
+[node name="ColorRect" type="ColorRect"]
+custom_minimum_size = Vector2(100, 20)
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_nxw3c")

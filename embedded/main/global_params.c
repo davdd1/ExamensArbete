@@ -8,6 +8,11 @@ task_params_t global_task_params;
 packet_t global_packet;
 
 
+/**
+ * @brief Initializes system time using SNTP and sets the timezone.
+ *
+ * Configures the system timezone to "Europe/Stockholm" and synchronizes the system clock with an NTP server ("pool.ntp.org") using SNTP in polling mode. Waits for the system time to be set to a valid date (year > 2020), retrying up to 15 times with a 1-second delay between attempts. Prints the final synchronized time and SNTP synchronization status.
+ */
 void init_time(void) {
     // Sätt tidszon tidigt
     setenv("TZ", "Europe/Stockholm", 1);
