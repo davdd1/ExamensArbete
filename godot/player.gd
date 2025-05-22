@@ -31,6 +31,11 @@ func _process(delta: float) -> void:
 		velocity = lerp(velocity, target_speed, 0.1)
 		position.y += velocity * delta
 		position.y = clamp(position.y, p_height/2, win_height-p_height/2)
+		#Ifall vi klickar knappen så byter vi scene till menu
+		var press = data.get("button_state", false)
+		if press:
+			get_tree().change_scene_to_file("res://Scenes/menu_scene.tscn") # Ändra sökvägen till din meny-scen
+			
 	# Hämta noden som tar emot sensor-data
 
 func _process_cpu(delta: float) -> void:

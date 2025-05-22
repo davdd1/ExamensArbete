@@ -35,6 +35,12 @@ func _ready() -> void:
 		var shape = cpu.get_node("CollisionShape2D")
 		shape.disabled = not cpu.visible
 	
+	$Label.visible = true 
+	get_tree().paused = true
+	await get_tree().create_timer(2.0).timeout
+	$Label.visible = false
+	get_tree().paused = false
+	
 
 func _on_ball_timer_timeout() -> void:
 	$ball.new_ball()

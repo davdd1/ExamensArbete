@@ -155,6 +155,15 @@ autostart = true
 [node name="WebSocketNode" type="Node" parent="."]
 script = ExtResource("6_tsdg2")
 
+[node name="Label" type="Label" parent="."]
+visible = false
+offset_left = 96.0
+offset_top = 64.0
+offset_right = 361.0
+offset_bottom = 216.0
+theme_override_font_sizes/font_size = 50
+text = "GET READY"
+
 [connection signal="body_entered" from="scoreLeft" to="." method="_on_score_left_body_entered"]
 [connection signal="body_entered" from="scoreRight" to="." method="_on_score_right_body_entered"]
 [connection signal="timeout" from="BallTimer" to="." method="_on_ball_timer_timeout"]
