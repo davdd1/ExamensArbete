@@ -1,9 +1,18 @@
-[gd_scene load_steps=2 format=3 uid="uid://bfm0y43pvknsf"]
+[gd_scene load_steps=6 format=3 uid="uid://bfm0y43pvknsf"]
 
 [ext_resource type="Script" uid="uid://mhv8gg0wgfn3" path="res://canvas.gd" id="1_bdplv"]
+[ext_resource type="AudioStream" uid="uid://8hvaewcou3rw" path="res://sound/Pixel_Space.mp3" id="2_qir10"]
+[ext_resource type="AudioStream" uid="uid://523y14s7ymc0" path="res://sound/explosion.mp3" id="3_kjhlr"]
+[ext_resource type="AudioStream" uid="uid://cwfkcmbeqod26" path="res://sound/Loser.mp3" id="4_wld83"]
+[ext_resource type="Texture2D" uid="uid://5gsy2b2eip1" path="res://assets/BKb.png" id="5_sta47"]
 
 [node name="Draw" type="Node2D"]
 script = ExtResource("1_bdplv")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+offset_right = 1152.0
+offset_bottom = 1024.0
+texture = ExtResource("5_sta47")
 
 [node name="DebugLable" type="Label" parent="."]
 offset_left = 64.0
@@ -34,5 +43,17 @@ layout_mode = 0
 offset_right = 40.0
 offset_bottom = 23.0
 theme_override_font_sizes/font_size = 120
+
+[node name="BRSLoop" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("2_qir10")
+volume_db = -30.776
+
+[node name="explo" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("3_kjhlr")
+volume_db = -15.388
+
+[node name="loss" type="AudioStreamPlayer2D" parent="."]
+process_mode = 3
+stream = ExtResource("4_wld83")
 
 [connection signal="timeout" from="Timer" to="." method="_on_spawn_timer_timeout"]
