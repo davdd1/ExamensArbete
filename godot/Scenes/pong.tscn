@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://brp6gcj5yxsrp"]
+[gd_scene load_steps=15 format=3 uid="uid://brp6gcj5yxsrp"]
 
 [ext_resource type="Texture2D" uid="uid://pucgh0qbmij" path="res://assets/Bg.png" id="1_4e36o"]
 [ext_resource type="Script" uid="uid://dk6mporbd5vv5" path="res://main.gd" id="2_quh8c"]
@@ -6,6 +6,9 @@
 [ext_resource type="Script" uid="uid://7exnvuogwy0g" path="res://ball.gd" id="4_ji5cf"]
 [ext_resource type="FontFile" uid="uid://cwd1tkm36irny" path="res://assets/pixel_font.ttf" id="5_e86jt"]
 [ext_resource type="Script" uid="uid://d122mspb3euky" path="res://node.gd" id="6_tsdg2"]
+[ext_resource type="AudioStream" uid="uid://d4hw78jn1iibd" path="res://sound/Pong_hit.mp3" id="7_2yi6e"]
+[ext_resource type="AudioStream" uid="uid://b0en7xubleddh" path="res://sound/win.mp3" id="8_ji5cf"]
+[ext_resource type="AudioStream" uid="uid://bocvuqknjd4ol" path="res://sound/Mario_Kart.mp3" id="9_ji5cf"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_6y131"]
 size = Vector2(20, 120)
@@ -154,6 +157,28 @@ autostart = true
 
 [node name="WebSocketNode" type="Node" parent="."]
 script = ExtResource("6_tsdg2")
+
+[node name="Label" type="Label" parent="."]
+visible = false
+offset_left = 96.0
+offset_top = 64.0
+offset_right = 361.0
+offset_bottom = 216.0
+theme_override_font_sizes/font_size = 50
+text = "GET READY"
+
+[node name="bounce" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("7_2yi6e")
+volume_db = -6.913
+
+[node name="win" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("8_ji5cf")
+
+[node name="BRSLoop" type="AudioStreamPlayer2D" parent="."]
+process_mode = 3
+stream = ExtResource("9_ji5cf")
+volume_db = -30.807
+parameters/looping = true
 
 [connection signal="body_entered" from="scoreLeft" to="." method="_on_score_left_body_entered"]
 [connection signal="body_entered" from="scoreRight" to="." method="_on_score_right_body_entered"]

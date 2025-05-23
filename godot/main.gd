@@ -11,6 +11,7 @@ var score := [0,0] #0:player 1:CPU
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	WebSocketManager.set_current_scene(self)
+	$BRSLoop.play()
 	var map_macs = WebSocketManager.get_active_macs_map()
 	var macs = map_macs.keys() # Get oss alla macs bara i listan
 	
@@ -35,6 +36,12 @@ func _ready() -> void:
 		var shape = cpu.get_node("CollisionShape2D")
 		shape.disabled = not cpu.visible
 	
+	$Label.visible = true 
+	get_tree().paused = true
+	await get_tree().create_timer(2.0).timeout
+	$Label.visible = false
+	get_tree().paused = false
+	
 
 func _on_ball_timer_timeout() -> void:
 	$ball.new_ball()
@@ -43,11 +50,13 @@ func _on_ball_timer_timeout() -> void:
 func _on_score_left_body_entered(_body: Node2D) -> void:
 	score[1] += 1
 	$Hud/cpuScore.text = str(score[1])
+	$win.play()
 	$BallTimer.start()
 
 func _on_score_right_body_entered(_body: Node2D) -> void:
 	score[0] += 1
 	$Hud/playerScore.text = str(score[0])
+	$win.play()
 	$BallTimer.start()
 	
 func _set_paddle_color(paddle: Node, color_str: String) -> void:

@@ -18,6 +18,7 @@ var paddles = {} # mac -> Paddle Node
 func _ready():
 	WebSocketManager.register_drawing_scene(self)
 	WebSocketManager.set_current_scene(self)
+	$BRSLoop.play()
 	var mac_map = WebSocketManager.get_active_macs_map()
 
 	macs = mac_map.keys()
@@ -63,6 +64,7 @@ func _on_ball_missed():
 		_game_over()
 
 func _on_ball_bounced():
+	$explo.play()
 	bounce_count += 1
 	print("Studs: %d" % bounce_count)
 	# (Valfritt: uppdatera en label på skärmen)
@@ -71,6 +73,7 @@ func _game_over():
 	print("Game over!")
 	game_over_label.text = "GAME OVER\nStuds: %d" % bounce_count
 	game_over_panel.visible = true
+	$loss.play()
 	get_tree().paused = true
 	await get_tree().create_timer(3.0).timeout
 	get_tree().paused = false
