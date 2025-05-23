@@ -1,4 +1,4 @@
-menu "TLS project Configuration"
+menu "Project Configuration"
     config WIFI_SSID
             string "WIFI SSID"
             default "myssid"
