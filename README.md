@@ -183,5 +183,7 @@ go run .
 - [LICENSE](LICENSE) - MIT License
 - [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
 - [HARDWARE.md](HARDWARE.md) - Hardware assembly and wiring diagrams
+- [SECURITY.md](SECURITY.md) - Security policy and best practices
+- [CHANGELOG.md](CHANGELOG.md) - Version history and changes
 
 *This project is open source for research, education, and prototyping. Pull requests and forks welcome!*
