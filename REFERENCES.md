@@ -12,7 +12,7 @@
 
 ## Protocols
 
-**UDP:** RFC 768 - https://www.rfc-editor.org/rfc/rfc768  
+**UDP:** RFC 768 - https://www.rfc-editor.org/rfc/rfc768
 **WebSocket:** RFC 6455 - https://www.rfc-editor.org/rfc/rfc6455
 
 ## Software
@@ -32,7 +32,7 @@
 
 ## Tools
 
-**Docker:** https://docs.docker.com/  
+**Docker:** https://docs.docker.com/
 **Git:** https://git-scm.com/doc
 
 ## Future Reading
