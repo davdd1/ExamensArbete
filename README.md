@@ -150,20 +150,25 @@ Our aim: Create an open, low-cost, real-time controller platform, fully hackable
 
 1. Assemble ESP32-S3 with MPU6050 (I2C) and joystick (ADC)
 2. Power with LiPo battery
+3. See [HARDWARE.md](HARDWARE.md) for detailed wiring diagrams and assembly instructions
 
 ### Software
 
 **ESP32:**  
-- Flash with provided firmware
+- See [embedded/README.md](embedded/README.md) for build and flash instructions
 
 **Go Server:**  
 ```sh
+cd server
 go get github.com/gorilla/websocket
 go run .
 ```
+- Or use Docker: `docker-compose up --build -d`
+- See [server/README.md](server/README.md) for details
 
 **Godot Client:**
 - Open project in Godot, run
+- See [godot/README.md](godot/README.md) for setup instructions
 
 
 ### Authors & Credits
@@ -172,7 +177,13 @@ go run .
 - Hardware advisor: Tobias Forsén, Creekside AB
 
 ### References
-- See [file] for full sources and technical background.
+- See [REFERENCES.md](REFERENCES.md) for full sources and technical background.
 
+### Additional Documentation
+- [LICENSE](LICENSE) - MIT License
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
+- [HARDWARE.md](HARDWARE.md) - Hardware assembly and wiring diagrams
+- [SECURITY.md](SECURITY.md) - Security policy and best practices
+- [CHANGELOG.md](CHANGELOG.md) - Version history and changes
 
 *This project is open source for research, education, and prototyping. Pull requests and forks welcome!*
